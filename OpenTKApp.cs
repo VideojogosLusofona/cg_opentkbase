@@ -1,4 +1,5 @@
 ﻿
+using OpenTK.Graphics.OpenGL;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
@@ -15,7 +16,15 @@ namespace SDLBase
 
         private bool    exit = false;
 
-        public OpenTKApp(int resX, int resY, string title) : base(GameWindowSettings.Default, new NativeWindowSettings {  Size = (resX, resY), Title = title })
+        public OpenTKApp(int resX, int resY, string title) : base(GameWindowSettings.Default, 
+                                                                  new NativeWindowSettings 
+                                                                  {  
+                                                                      Size = (resX, resY), 
+                                                                      Title = title, 
+                                                                      Profile = ContextProfile.Compatability,
+                                                                      API = ContextAPI.OpenGL,
+                                                                      Flags = ContextFlags.Default
+                                                                  })
         {
             this.resX = resX;
             this.resY = resY;
@@ -24,6 +33,8 @@ namespace SDLBase
 
         public bool Initialize()
         {
+            GL.Viewport(0, 0, resX, resY);
+
             return true;
         }
 
