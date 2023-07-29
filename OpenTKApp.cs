@@ -7,24 +7,17 @@ using System;
 
 namespace SDLBase
 {
-    public class OpenTKApp : GameWindow
+    public class OpenTKApp
     {
-        private int     resX = 512;
-        private int     resY = 512;
-        private string  title = "Test App";
-        private Action? runAction = null;
+        private int         resX = 512;
+        private int         resY = 512;
+        private string      title = "Test App";
+        private Action?     runAction = null;
+        private GameWindow? window = null;
 
         private bool    exit = false;
 
-        public OpenTKApp(int resX, int resY, string title) : base(GameWindowSettings.Default, 
-                                                                  new NativeWindowSettings 
-                                                                  {  
-                                                                      Size = (resX, resY), 
-                                                                      Title = title, 
-                                                                      Profile = ContextProfile.Compatability,
-                                                                      API = ContextAPI.OpenGL,
-                                                                      Flags = ContextFlags.Default
-                                                                  })
+        public OpenTKApp(int resX, int resY, string title)
         {
             this.resX = resX;
             this.resY = resY;
@@ -33,6 +26,18 @@ namespace SDLBase
 
         public bool Initialize()
         {
+            window = new GameWindow(GameWindowSettings.Default,
+                                    new NativeWindowSettings
+                                    {
+                                        Size = (resX, resY),
+                                        Title = title,
+                                        Profile = ContextProfile.Compatability,
+                                        API = ContextAPI.OpenGL,
+                                        Flags = ContextFlags.Default
+                                    });
+
+            window.RenderFrame += OnUpdateFrame;
+
             GL.Viewport(0, 0, resX, resY);
 
             return true;
@@ -42,25 +47,26 @@ namespace SDLBase
         {
         }
 
+
         public void Run(Action mainLoopFunction)
         {
             runAction = mainLoopFunction;
 
-            Run();
+            window?.Run();
         }
 
-        protected override void OnUpdateFrame(FrameEventArgs e)
+        private void OnUpdateFrame(FrameEventArgs e)
         {
-            base.OnUpdateFrame(e);
+            if (window == null) return;
 
-            if ((KeyboardState.IsKeyDown(Keys.Escape)) && (KeyboardState.IsKeyDown(Keys.LeftShift)))
+            if ((window.KeyboardState.IsKeyDown(Keys.Escape)) && (window.KeyboardState.IsKeyDown(Keys.LeftShift)))
             {
-                Close();
+                window.Close();
             }
 
             runAction?.Invoke();
 
-            SwapBuffers();
+            window.SwapBuffers();
         }
     }
 }
