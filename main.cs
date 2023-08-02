@@ -7,79 +7,23 @@ using System.Drawing;
 
 namespace SDLBase
 {
-    public class OpenTKProgram
+    public static class OpenTKProgram
     {
         public static void Main()
         {
-            OpenTKApp app = new OpenTKApp(1280, 720, "OpenTK Base Application");
+            OpenTKApp app = new OpenTKApp(1280, 720, "Forest");
 
             app.Initialize();
             app.LockMouse(true);
 
-            ExecuteApp_EngineMesh(app);
+            ExecuteApp_Forest(app);
 
             app.Shutdown();
         }
 
-        static Mesh CreatePyramid(int nSides, float baseRadius, float height)
+        static void CreateGround(float size)
         {
-            var pos = new List<Vector3>();
-            var colors = new List<Color4>();
-
-            Mesh mesh = new Mesh();
-
-            float angleInc = MathF.PI * 2.0f / nSides;
-            for (int i = 0; i < nSides; i++)
-            {
-                pos.Add(new Vector3((float)(baseRadius * MathF.Cos(angleInc * i)), 0.0f, (float)(baseRadius * MathF.Sin(angleInc * i))));
-                pos.Add(new Vector3((float)(baseRadius * MathF.Cos(angleInc * (i + 1))), 0.0f, (float)(baseRadius * MathF.Sin(angleInc * (i + 1)))));
-                pos.Add(new Vector3(0.0f, height, 0.0f));
-
-                colors.Add(Color4.Yellow);
-                colors.Add(Color4.Red);
-                colors.Add(Color4.Green);
-
-                pos.Add(new Vector3((float)(baseRadius * MathF.Cos(angleInc * i)), 0.0f, (float)(baseRadius * MathF.Sin(angleInc * i))));
-                pos.Add(new Vector3((float)(baseRadius * MathF.Cos(angleInc * (i + 1))), 0.0f, (float)(baseRadius * MathF.Sin(angleInc * (i + 1)))));
-                pos.Add(new Vector3(0.0f, 0.0f, 0.0f));
-
-                colors.Add(Color4.Green);
-                colors.Add(Color4.Cyan);
-                colors.Add(Color4.Blue);
-            }
-
-            mesh.SetVertices(pos);
-            mesh.SetColor0(colors);
-
-            return mesh;
-        }
-
-        static Mesh CreatePlane(float sizeX, float sizeZ)
-        {
-            float sx = sizeX * 0.5f;
-            float sz = sizeZ * 0.5f;
-
-            var pos = new List<Vector3>();
-
-            Mesh mesh = new Mesh();
-
-            pos.Add(new Vector3(-sx, 0.0f, -sz));
-            pos.Add(new Vector3(-sx, 0.0f,  sz));
-            pos.Add(new Vector3( sx, 0.0f,  sz));
-            
-            pos.Add(new Vector3(-sx, 0.0f, -sz));
-            pos.Add(new Vector3( sx, 0.0f,  sz));
-            pos.Add(new Vector3( sx, 0.0f, -sz));
-
-            mesh.SetVertices(pos);
-
-            return mesh;
-        }
-
-        static void ExecuteApp_EngineMesh(OpenTKApp app)
-        {
-            // Create ground
-            Mesh mesh = CreatePlane(60.0f, 60.0f);
+            Mesh mesh = GeometryFactory.AddPlane(size, size);
 
             Material material = new Material();
             material.color = Color4.DarkGreen;
@@ -90,19 +34,60 @@ namespace SDLBase
             mf.mesh = mesh;
             MeshRenderer mr = go.AddComponent<MeshRenderer>();
             mr.material = material;
+        }
 
-            // Create pyramid
-            mesh = CreatePyramid(3, 1.5f, 3.0f);
+        static float Range(this Random rnd, float a, float b)
+        {
+            return rnd.NextSingle() * (b - a) + a;
+        }
+
+        static void CreateRandomTree(Random rnd, float forestSize)
+        {
+            float s = forestSize * 0.5f;
+
+            // Trunk
+            float heightTrunk = rnd.Range(0.5f, 1.5f);
+            float widthTrunk = rnd.Range(0.7f, 1.25f);
+
+            Mesh mesh = GeometryFactory.AddPrysm(widthTrunk, heightTrunk, 8);
+
+            Material material = new Material();
+            material.color = new Color4(200, 128, 64, 255);
+
+            GameObject mainObject = new GameObject();
+            mainObject.transform.position = new Vector3(rnd.Range(-s, s), 0, rnd.Range(-s, s));
+            MeshFilter mf = mainObject.AddComponent<MeshFilter>();
+            mf.mesh = mesh;
+            MeshRenderer mr = mainObject.AddComponent<MeshRenderer>();
+            mr.material = material;
+
+            // Leaves
+            mesh = GeometryFactory.AddPrysm(rnd.Range(widthTrunk * 1.5f, widthTrunk * 4.0f), rnd.Range(heightTrunk * 2.0f, heightTrunk * 8.0f));
 
             material = new Material();
-            material.color = Color4.Yellow;
+            material.color = Color.Green;
 
-            go = new GameObject();
-            go.transform.position = new Vector3(0, 0, -15);
-            mf = go.AddComponent<MeshFilter>();
+            GameObject leaveObj = new GameObject();
+            leaveObj.transform.position = mainObject.transform.position + Vector3.UnitY * heightTrunk;
+            mf = leaveObj.AddComponent<MeshFilter>();
             mf.mesh = mesh;
-            mr = go.AddComponent<MeshRenderer>();
+            mr = leaveObj.AddComponent<MeshRenderer>();
             mr.material = material;
+        }
+
+        static void ExecuteApp_Forest(OpenTKApp app)
+        {
+            float forestSize = 120.0f;
+
+            // Create ground
+            CreateGround(forestSize);
+
+            // Create trees
+            Random rnd = new Random();
+            for (int i = 0; i < 50; i++)
+            {
+                CreateRandomTree(rnd, forestSize);
+            }
 
             // Create camera
             GameObject cameraObject = new GameObject();
