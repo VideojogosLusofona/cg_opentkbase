@@ -1,6 +1,9 @@
 ﻿using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
+using OpenTKBase;
 using System;
+using System.Collections.Generic;
+using System.Drawing;
 
 namespace SDLBase
 {
@@ -11,120 +14,109 @@ namespace SDLBase
             OpenTKApp app = new OpenTKApp(1280, 720, "OpenTK Base Application");
 
             app.Initialize();
+            app.LockMouse(true);
 
-            ExecuteApp_TrianglesImmediateTransform(app);
+            ExecuteApp_EngineMesh(app);
 
             app.Shutdown();
         }
 
-        static void ExecuteApp_TrianglesImmediateDepth(OpenTKApp app)
+        static Mesh CreatePyramid(int nSides, float baseRadius, float height)
         {
-            // Activate depth testing
-            GL.Enable(EnableCap.DepthTest);
-            // Set the test function
-            GL.DepthFunc(DepthFunction.Lequal);
-            // Enable depth write
-            GL.DepthMask(true);
+            var pos = new List<Vector3>();
+            var colors = new List<Color4>();
 
-            float depthBright = 0.5f;
-            float depthBlue = 0.25f;
+            Mesh mesh = new Mesh();
 
-            app.Run(() =>
+            float angleInc = MathF.PI * 2.0f / nSides;
+            for (int i = 0; i < nSides; i++)
             {
-                // Clear color buffer and the depth buffer
-                GL.ClearColor(0.2f, 0.4f, 0.2f, 1.0f);
-                GL.ClearDepth(1.0f);
-                GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+                pos.Add(new Vector3((float)(baseRadius * MathF.Cos(angleInc * i)), 0.0f, (float)(baseRadius * MathF.Sin(angleInc * i))));
+                pos.Add(new Vector3((float)(baseRadius * MathF.Cos(angleInc * (i + 1))), 0.0f, (float)(baseRadius * MathF.Sin(angleInc * (i + 1)))));
+                pos.Add(new Vector3(0.0f, height, 0.0f));
 
-                GL.Begin(PrimitiveType.Triangles);
+                colors.Add(Color4.Yellow);
+                colors.Add(Color4.Red);
+                colors.Add(Color4.Green);
 
-                GL.Color4(1.0f, 0.0f, 0.0f, 1.0f);
-                GL.Vertex3(0.0f, 0.5f, depthBright);
-                GL.Color4(1.0f, 1.0f, 0.0f, 1.0f);
-                GL.Vertex3(0.5f, -0.5f, depthBright);
-                GL.Color4(0.0f, 1.0f, 0.0f, 1.0f);
-                GL.Vertex3(-0.5f, -0.5f, depthBright);
+                pos.Add(new Vector3((float)(baseRadius * MathF.Cos(angleInc * i)), 0.0f, (float)(baseRadius * MathF.Sin(angleInc * i))));
+                pos.Add(new Vector3((float)(baseRadius * MathF.Cos(angleInc * (i + 1))), 0.0f, (float)(baseRadius * MathF.Sin(angleInc * (i + 1)))));
+                pos.Add(new Vector3(0.0f, 0.0f, 0.0f));
 
-                GL.Color4(0.0f, 0.5f, 1.0f, 1.0f);
-                GL.Vertex3(0.2f, 0.6f, depthBlue);
-                GL.Color4(0.8f, 0.4f, 1.0f, 1.0f);
-                GL.Vertex3(0.7f, -0.4f, depthBlue);
-                GL.Color4(0.0f, 1.0f, 1.0f, 1.0f);
-                GL.Vertex3(-0.3f, -0.4f, depthBlue);
+                colors.Add(Color4.Green);
+                colors.Add(Color4.Cyan);
+                colors.Add(Color4.Blue);
+            }
 
-                GL.End();
-            });
+            mesh.SetVertices(pos);
+            mesh.SetColor0(colors);
+
+            return mesh;
         }
 
-        static void ExecuteApp_TrianglesImmediateDepthBlend(OpenTKApp app)
+        static Mesh CreatePlane(float sizeX, float sizeZ)
         {
-            // Set depth test flags
-            GL.Enable(EnableCap.DepthTest);
-            GL.DepthFunc(DepthFunction.Lequal);
-            GL.DepthMask(true);
-            // Set blend operation
-            GL.Enable(EnableCap.Blend);
-            GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
+            float sx = sizeX * 0.5f;
+            float sz = sizeZ * 0.5f;
 
-            float depthBright = 0.5f;
+            var pos = new List<Vector3>();
 
-            app.Run(() =>
-            {
-                // Clear color buffer and the depth buffer
-                GL.ClearColor(0.2f, 0.4f, 0.2f, 1.0f);
-                GL.ClearDepth(1.0f);
-                GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+            Mesh mesh = new Mesh();
 
-                GL.Begin(PrimitiveType.Triangles);
+            pos.Add(new Vector3(-sx, 0.0f, -sz));
+            pos.Add(new Vector3(-sx, 0.0f,  sz));
+            pos.Add(new Vector3( sx, 0.0f,  sz));
+            
+            pos.Add(new Vector3(-sx, 0.0f, -sz));
+            pos.Add(new Vector3( sx, 0.0f,  sz));
+            pos.Add(new Vector3( sx, 0.0f, -sz));
 
-                GL.Color4(1.0f, 0.0f, 0.0f, 1.0f);
-                GL.Vertex3(0.0f, 0.5f, depthBright);
-                GL.Color4(1.0f, 1.0f, 0.0f, 1.0f);
-                GL.Vertex3(0.5f, -0.5f, depthBright);
-                GL.Color4(0.0f, 1.0f, 0.0f, 1.0f);
-                GL.Vertex3(-0.5f, -0.5f, depthBright);
+            mesh.SetVertices(pos);
 
-                GL.End();
-            });
-
+            return mesh;
         }
 
-
-        static void ExecuteApp_TrianglesImmediateTransform(OpenTKApp app)
+        static void ExecuteApp_EngineMesh(OpenTKApp app)
         {
-            // Activate depth testing
-            GL.Enable(EnableCap.DepthTest);
-            // Set the test function
-            GL.DepthFunc(DepthFunction.Lequal);
-            // Enable depth write
-            GL.DepthMask(true);
+            // Create ground
+            Mesh mesh = CreatePlane(60.0f, 60.0f);
 
-            float   angle = 0.0f;
-            Matrix4 worldMatrix;
+            Material material = new Material();
+            material.color = Color4.DarkGreen;
+
+            GameObject go = new GameObject();
+            go.transform.position = new Vector3(0, 0, 0);
+            MeshFilter mf = go.AddComponent<MeshFilter>();
+            mf.mesh = mesh;
+            MeshRenderer mr = go.AddComponent<MeshRenderer>();
+            mr.material = material;
+
+            // Create pyramid
+            mesh = CreatePyramid(3, 1.5f, 3.0f);
+
+            material = new Material();
+            material.color = Color4.Yellow;
+
+            go = new GameObject();
+            go.transform.position = new Vector3(0, 0, -15);
+            mf = go.AddComponent<MeshFilter>();
+            mf.mesh = mesh;
+            mr = go.AddComponent<MeshRenderer>();
+            mr.material = material;
+
+            // Create camera
+            GameObject cameraObject = new GameObject();
+            Camera camera = cameraObject.AddComponent<Camera>();
+            camera.transform.position = new Vector3(0.0f, 2.0f, 0.0f);
+            camera.ortographic = false;
+            FirstPersonController fps = cameraObject.AddComponent<FirstPersonController>();
+
+            // Create pipeline
+            RPSIM renderPipeline = new RPSIM();
 
             app.Run(() =>
             {
-                // Clear color buffer and the depth buffer
-                GL.ClearColor(0.2f, 0.4f, 0.2f, 1.0f);
-                GL.ClearDepth(1.0f);
-                GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-
-                worldMatrix = Matrix4.CreateRotationZ(angle);
-                angle += 0.1f;
-
-                GL.MatrixMode(MatrixMode.Modelview);
-                GL.LoadMatrix(ref worldMatrix);
-
-                GL.Begin(PrimitiveType.Triangles);
-
-                GL.Color4(1.0f, 0.0f, 0.0f, 1.0f);
-                GL.Vertex3(0.0f, 0.5f, 0.5f);
-                GL.Color4(1.0f, 1.0f, 0.0f, 1.0f);
-                GL.Vertex3(0.5f, -0.5f, 0.5f);
-                GL.Color4(0.0f, 1.0f, 0.0f, 1.0f);
-                GL.Vertex3(-0.5f, -0.5f, 0.5f);
-
-                GL.End();
+                app.Render(renderPipeline);
             });
         }
     }
