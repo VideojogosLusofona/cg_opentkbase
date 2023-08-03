@@ -11,12 +11,13 @@ namespace SDLBase
     {
         public static void Main()
         {
-            OpenTKApp app = new OpenTKApp(1280, 720, "Forest");
+            OpenTKApp app = new OpenTKApp(1280, 720, "Forest", true);
 
             app.Initialize();
             app.LockMouse(true);
 
-            ExecuteApp_Forest(app);
+            //ExecuteApp_Forest(app);
+            ExecuteApp_NoTransform(app);
 
             app.Shutdown();
         }
@@ -25,7 +26,7 @@ namespace SDLBase
         {
             Mesh mesh = GeometryFactory.AddPlane(size, size);
 
-            Material material = new Material();
+            Material material = new Material(Shader.Find("simple"));
             material.color = Color4.DarkGreen;
 
             GameObject go = new GameObject();
@@ -51,7 +52,7 @@ namespace SDLBase
 
             Mesh mesh = GeometryFactory.AddCylinder(widthTrunk, heightTrunk, 8);
 
-            Material material = new Material();
+            Material material = new Material(Shader.Find("simple"));
             material.color = new Color4(200, 128, 64, 255);
 
             GameObject mainObject = new GameObject();
@@ -64,7 +65,7 @@ namespace SDLBase
             // Leaves
             mesh = GeometryFactory.AddCylinder(rnd.Range(widthTrunk * 1.5f, widthTrunk * 4.0f), rnd.Range(heightTrunk * 2.0f, heightTrunk * 8.0f));
 
-            material = new Material();
+            material = new Material(Shader.Find("simple"));
             material.color = Color.Green;
 
             GameObject leaveObj = new GameObject();
@@ -99,6 +100,37 @@ namespace SDLBase
 
             // Create pipeline
             RPSIM renderPipeline = new RPSIM();
+
+            app.Run(() =>
+            {
+                app.Render(renderPipeline);
+            });
+        }
+
+        static void ExecuteApp_NoTransform(OpenTKApp app)
+        {
+            // Create a mesh (NDC coordinates)
+            Mesh mesh = new Mesh();
+            mesh.SetVertices(new List<Vector3>() { new Vector3(0.0f, 0.5f, 0.5f), new Vector3(-0.5f, -0.5f, 0.5f), new Vector3(0.5f, -0.5f, 0.5f) });
+
+            Material material = new Material(Shader.Find("Shaders/simple"));
+
+            GameObject go = new GameObject();
+            go.transform.position = new Vector3(0, 0, 0);
+            MeshFilter mf = go.AddComponent<MeshFilter>();
+            mf.mesh = mesh;
+            MeshRenderer mr = go.AddComponent<MeshRenderer>();
+            mr.material = material;
+
+            // Create camera - Doesn't matter for now the type of camera,
+            // we just use to clear the screen.
+            GameObject cameraObject = new GameObject();
+            Camera camera = cameraObject.AddComponent<Camera>();
+            camera.transform.position = new Vector3(0.0f, 2.0f, 0.0f);
+            camera.ortographic = false;
+
+            // Create pipeline
+            RPS renderPipeline = new RPS();
 
             app.Run(() =>
             {

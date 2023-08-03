@@ -23,6 +23,14 @@ namespace OpenTKBase
             }
         }
 
+        public override void Render(Camera camera)
+        {
+            var material = this.material;
+
+            var mf = GetComponent<MeshFilter>();
+            mf.mesh.Render(material);
+        }
+
         public override void RenderImmediate(Camera camera)
         {
             var worldMatrix = transform.localToWorldMatrix;

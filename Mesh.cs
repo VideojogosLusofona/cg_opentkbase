@@ -1,5 +1,6 @@
 ﻿
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
 
@@ -13,7 +14,29 @@ namespace OpenTKBase
         private List<Color4>    colors;
         private List<int>       indices;
 
+        private bool            dirty = true;
 
+        private int             vbo = -1;
+
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        private struct VertexData
+        {
+            public Vector3  position;
+            public Vector3  normal;
+            public Color4   color;
+
+            public static readonly int SizeInBytes = Marshal.SizeOf<VertexData>();
+        }
+
+        ~Mesh()
+        {
+            if (vbo != -1)
+            {
+                GL.DeleteBuffer(vbo);
+                vbo = -1;
+            }
+        }
+        
         public void SetIndices(List<int> indices)
         {
             this.indices = indices;
@@ -24,6 +47,7 @@ namespace OpenTKBase
         public void SetVertices(List<Vector3> vertices)
         {
             this.vertices = vertices;
+            dirty = true;
         }
 
         public List<Vector3> GetVertices() => vertices;
@@ -31,6 +55,7 @@ namespace OpenTKBase
         public void SetNormals(List<Vector3> normals)
         {
             this.normals = normals;
+            dirty = true;
         }
 
         public List<Vector3> GetNormals() => normals;
@@ -38,6 +63,7 @@ namespace OpenTKBase
         public void SetColors(List<Color4> colors)
         {
             this.colors = colors;
+            dirty = true;
         }
 
         public List<Color4> GetColors() => colors;
@@ -68,6 +94,82 @@ namespace OpenTKBase
             }
 
             GL.End();
+        }
+
+        public void Render(Material material)
+        {
+            Shader shader = material.shader;
+            if (shader == null) return;
+
+            if (dirty)
+            {
+                Update();
+            }
+
+            int vao = GetVAO(shader);
+
+            shader.Set();
+            GL.BindVertexArray(vao);
+            GL.DrawArrays(PrimitiveType.Triangles, 0, vertices.Count);
+        }
+
+        public void Update()
+        {
+            if (vbo != -1)
+            {
+                // Guarantee that this buffer is not in use
+                GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
+                GL.DeleteBuffer(vbo);
+            }
+
+            vbo = GL.GenBuffer();
+
+            // Marshalling
+            VertexData[] marshallData = new VertexData[vertices.Count];
+            for (int i = 0; i < vertices.Count; i++)
+            {
+                marshallData[i].position = vertices[i];
+                if (normals != null) marshallData[i].normal = normals[i];
+                if (colors != null) marshallData[i].color = colors[i];
+            }
+
+            GL.BindBuffer(BufferTarget.ArrayBuffer, vbo);
+            GL.BufferData(BufferTarget.ArrayBuffer, VertexData.SizeInBytes * vertices.Count, marshallData, BufferUsageHint.StaticDraw);
+
+            dirty = false;
+        }
+
+        Dictionary<Shader, int> vaos = new Dictionary<Shader, int>();
+        private int GetVAO(Shader shader)
+        {
+            int vao;
+            if (vaos.TryGetValue(shader, out vao))
+            {
+                return vao;
+            }
+
+            vao = GL.GenVertexArray();
+            GL.BindVertexArray(vao);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, vbo);
+
+            // Check if shader needs a specific attribute
+            if (vertices != null) SetupVAO(shader, "position", 3, VertexAttribPointerType.Float, false);
+            if (normals != null) SetupVAO(shader, "normal", 3, VertexAttribPointerType.Float, false);
+            if (colors != null) SetupVAO(shader, "color", 4, VertexAttribPointerType.Float, false);
+
+            vaos.Add(shader, vao);
+
+            return vao;
+        }
+
+        private void SetupVAO(Shader shader, string attributeName, int attrSize, VertexAttribPointerType dataType, bool normalize)
+        {
+            // Check if shader needs this attribute
+            int layoutPos = shader.GetAttributePos(attributeName);
+            if (layoutPos == -1) return;
+
+            GL.VertexAttribPointer(layoutPos, attrSize, dataType, normalize, VertexData.SizeInBytes, Marshal.OffsetOf<VertexData>(attributeName));
+            GL.EnableVertexAttribArray(layoutPos);
         }
     }
 }

@@ -7,6 +7,12 @@ namespace OpenTKBase
     public class Material
     {
         public Color4 color = Color4.White;
+        public Shader shader;
+
+        public Material(Shader shader)
+        {
+            this.shader = shader;
+        }
 
         public void SetImmediate()
         {
