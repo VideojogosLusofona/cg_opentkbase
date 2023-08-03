@@ -18,10 +18,6 @@ namespace OpenTKBase
                 GL.ClearDepth(camera.GetClearDepth());
                 GL.Clear(camera.GetClearFlags());
 
-                var cameraMatrix = camera.projection;
-                GL.MatrixMode(MatrixMode.Projection);
-                GL.LoadMatrix(ref cameraMatrix);
-
                 foreach (var render in allRender)
                 {
                     render.Render(camera);

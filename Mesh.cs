@@ -139,17 +139,22 @@ namespace OpenTKBase
             dirty = false;
         }
 
+        // Dictionary that contains the links between this mesh and any shader that's needed
         Dictionary<Shader, int> vaos = new Dictionary<Shader, int>();
         private int GetVAO(Shader shader)
         {
+            // See if we already built this one
             int vao;
             if (vaos.TryGetValue(shader, out vao))
             {
                 return vao;
             }
 
+            // Create Vertex Array Object
             vao = GL.GenVertexArray();
+            // Bind this VAO (so we can configure it)
             GL.BindVertexArray(vao);
+            // Bind the VBO to this VAO
             GL.BindBuffer(BufferTarget.ArrayBuffer, vbo);
 
             // Check if shader needs a specific attribute
@@ -157,18 +162,23 @@ namespace OpenTKBase
             if (normals != null) SetupVAO(shader, "normal", 3, VertexAttribPointerType.Float, false);
             if (colors != null) SetupVAO(shader, "color", 4, VertexAttribPointerType.Float, false);
 
+            // Add it to our array
             vaos.Add(shader, vao);
 
+            // Return it
             return vao;
         }
 
+        // Helper function
         private void SetupVAO(Shader shader, string attributeName, int attrSize, VertexAttribPointerType dataType, bool normalize)
         {
             // Check if shader needs this attribute
             int layoutPos = shader.GetAttributePos(attributeName);
             if (layoutPos == -1) return;
 
+            // Setup the link between the data
             GL.VertexAttribPointer(layoutPos, attrSize, dataType, normalize, VertexData.SizeInBytes, Marshal.OffsetOf<VertexData>(attributeName));
+            // Enable this attribute
             GL.EnableVertexAttribArray(layoutPos);
         }
     }

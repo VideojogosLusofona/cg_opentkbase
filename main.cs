@@ -112,8 +112,9 @@ namespace SDLBase
             // Create a mesh (NDC coordinates)
             Mesh mesh = new Mesh();
             mesh.SetVertices(new List<Vector3>() { new Vector3(0.0f, 0.5f, 0.5f), new Vector3(-0.5f, -0.5f, 0.5f), new Vector3(0.5f, -0.5f, 0.5f) });
+            mesh.SetColors(new List<Color4>() { Color.Yellow, Color.Red, Color.Green });
 
-            Material material = new Material(Shader.Find("Shaders/simple"));
+            Material material = new Material(Shader.Find("Shaders/vertex_color"));
 
             GameObject go = new GameObject();
             go.transform.position = new Vector3(0, 0, 0);
