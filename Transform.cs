@@ -105,7 +105,7 @@ namespace OpenTKBase
 
                 _localPosition = (new Vector4(worldPosition, 1.0f) * parentInvMatrix).Xyz;
                 _localRotation = (Matrix4.CreateFromQuaternion(worldRotation) * parentInvMatrix).ExtractRotation(true);
-                _localScale = (new Vector4(worldPosition, 0.0f) * parentInvMatrix).Xyz;
+                _localScale = (Matrix4.CreateScale(worldScale) * parentInvMatrix).ExtractScale();
             }
             else
             {

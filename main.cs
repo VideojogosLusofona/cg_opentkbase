@@ -49,7 +49,7 @@ namespace SDLBase
             float heightTrunk = rnd.Range(0.5f, 1.5f);
             float widthTrunk = rnd.Range(0.7f, 1.25f);
 
-            Mesh mesh = GeometryFactory.AddPrysm(widthTrunk, heightTrunk, 8);
+            Mesh mesh = GeometryFactory.AddCylinder(widthTrunk, heightTrunk, 8);
 
             Material material = new Material();
             material.color = new Color4(200, 128, 64, 255);
@@ -62,13 +62,14 @@ namespace SDLBase
             mr.material = material;
 
             // Leaves
-            mesh = GeometryFactory.AddPrysm(rnd.Range(widthTrunk * 1.5f, widthTrunk * 4.0f), rnd.Range(heightTrunk * 2.0f, heightTrunk * 8.0f));
+            mesh = GeometryFactory.AddCylinder(rnd.Range(widthTrunk * 1.5f, widthTrunk * 4.0f), rnd.Range(heightTrunk * 2.0f, heightTrunk * 8.0f));
 
             material = new Material();
             material.color = Color.Green;
 
             GameObject leaveObj = new GameObject();
             leaveObj.transform.position = mainObject.transform.position + Vector3.UnitY * heightTrunk;
+            leaveObj.transform.SetParent(mainObject.transform);
             mf = leaveObj.AddComponent<MeshFilter>();
             mf.mesh = mesh;
             mr = leaveObj.AddComponent<MeshRenderer>();

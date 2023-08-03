@@ -30,7 +30,7 @@ namespace OpenTKBase
             return ret;
         }
 
-        public static Mesh AddPrysm(float radius, float height, int sides = 16)
+        public static Mesh AddCylinder(float radius, float height, int subdivs = 16)
         {
             Mesh ret = new Mesh();
             List<Vector3> vertices = new List<Vector3>();
@@ -38,10 +38,10 @@ namespace OpenTKBase
             List<int> indices = new List<int>();
 
             float angle = 0.0f;
-            float angleInc = 2.0f * MathF.PI / sides;
+            float angleInc = 2.0f * MathF.PI / subdivs;
 
             Vector3 topVertex = new Vector3(0.0f, height, 0.0f);
-            for (int i = 0; i < sides; i++)
+            for (int i = 0; i < subdivs; i++)
             {
                 Vector3 n1 = new Vector3(MathF.Cos(angle), 0.0f, MathF.Sin(angle));
                 Vector3 n2 = new Vector3(MathF.Cos(angle + angleInc), 0.0f, MathF.Sin(angle + angleInc));
