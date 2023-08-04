@@ -285,6 +285,9 @@ namespace OpenTKBase
                     case ActiveUniformType.Int:
                         GL.Uniform1(u.slot, (int)value);
                         break;
+                    case ActiveUniformType.Float:
+                        GL.Uniform1(u.slot, (float)value);
+                        break;
                     case ActiveUniformType.FloatVec2:
                         GL.Uniform2(u.slot, (Vector2)value);
                         break;

@@ -26,13 +26,43 @@ uniform Light   Lights[MAX_LIGHTS];
 
 out vec4 fragColor;
 
+vec3 ComputeDirectional(Light light, vec3 worldPos, vec3 worldNormal)
+{
+    float d = clamp(-dot(worldNormal, light.direction), 0, 1);
+    return d * light.color.rgb * light.intensity;
+}
+
+vec3 ComputePoint(Light light, vec3 worldPos, vec3 worldNormal)
+{
+    vec3  lightDir = normalize(worldPos - light.position);
+    float d = clamp(-dot(worldNormal, lightDir), 0, 1);
+    return d * light.color.rgb * light.intensity;
+}
+
+vec3 ComputeSpot(Light light, vec3 worldPos, vec3 worldNormal)
+{
+    vec3  lightDir = normalize(worldPos - light.position);
+    float d = clamp(-dot(worldNormal, lightDir), 0, 1);
+    float spot = (acos(dot(lightDir, light.direction)) - light.spot.x) / (light.spot.y - light.spot.x);
+
+    d = d * mix(1, 0, spot);
+    
+    return d * light.color.rgb * light.intensity;
+}
+
 vec3 ComputeLight(Light light, vec3 worldPos, vec3 worldNormal)
 {
     if (light.type == 0)
     {
-        float d = clamp(-dot(worldNormal, light.direction), 0, 1);
-
-        return vec3(d, d, d);
+        return ComputeDirectional(light, worldPos, worldNormal);
+    }
+    else if (light.type == 1)
+    {
+        return ComputePoint(light, worldPos, worldNormal);
+    }
+    else if (light.type == 2)
+    {
+        return ComputeSpot(light, worldPos, worldNormal);
     }
 }
 

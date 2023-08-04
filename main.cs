@@ -85,7 +85,7 @@ namespace SDLBase
         {
             var env = OpenTKApp.APP.mainScene.environment;
 
-            env.SetColor("Color", new Color4(0.2f, 0.2f, 0.2f, 1.0f));
+            env.SetColor("Color", Color.Black);// new Color4(0.2f, 0.2f, 0.2f, 1.0f));
             env.SetColor("ColorTop", new Color4(0.0f, 1.0f, 1.0f, 1.0f));
             env.SetColor("ColorMid", new Color4(1.0f, 1.0f, 1.0f, 1.0f));
             env.SetColor("ColorBottom", new Color4(0.0f, 0.25f, 0.0f, 1.0f));
@@ -95,16 +95,18 @@ namespace SDLBase
         {
             // Setup directional light turned 30 degrees down
             GameObject go = new GameObject();
+            go.transform.position = new Vector3(0.0f, 2.0f, 0.0f);
             go.transform.rotation = Quaternion.FromAxisAngle(Vector3.UnitX, -MathF.PI * 0.16f);
             Light light = go.AddComponent<Light>();
-            light.type = Light.Type.Directional;
+            light.type = Light.Type.Spot;
             light.lightColor = Color.White;
             light.intensity = 1.0f;
+            light.cone = new Vector2(0.0f, MathF.PI / 4.0f);
         }
 
         static (GameObject, Material) CreateSphere()
         {
-            Mesh mesh = GeometryFactory.AddSphere(2.0f, 32);
+            Mesh mesh = GeometryFactory.AddSphere(1.0f, 32);
 
             Material material = new Material(Shader.Find("Shaders/phong"));
             material.SetColor("Color", Color4.White);
@@ -130,12 +132,12 @@ namespace SDLBase
             // Create a sphere in the middle of the forest
             var (reflectSphere, reflectMaterial) = CreateSphere();
             var (glowSphere, glowMaterial) = CreateSphere();
-            glowSphere.transform.position += Vector3.UnitX * 4.0f;
+            glowSphere.transform.position += Vector3.UnitX * 4.0f - Vector3.UnitZ * 2.0f;
             glowMaterial.SetColor("Color", Color4.Black);
             glowMaterial.SetColor("ColorEmissive", Color4.Yellow);
 
             // Create trees
-            Random rnd = new Random(0);
+            Random rnd = new Random(1);
             for (int i = 0; i < 50; i++)
             {
                 CreateRandomTree(rnd, forestSize);
