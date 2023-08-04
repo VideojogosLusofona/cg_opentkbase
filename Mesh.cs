@@ -12,7 +12,7 @@ namespace OpenTKBase
         private List<Vector3>   vertices;
         private List<Vector3>   normals;
         private List<Color4>    colors;
-        private List<int>       indices;
+        private List<uint>      indices;
 
         private bool            dirty = true;
 
@@ -37,12 +37,12 @@ namespace OpenTKBase
             }
         }
         
-        public void SetIndices(List<int> indices)
+        public void SetIndices(List<uint> indices)
         {
             this.indices = indices;
         }
 
-        public List<int> GetIndices() => indices;
+        public List<uint> GetIndices() => indices;
 
         public void SetVertices(List<Vector3> vertices)
         {
@@ -87,9 +87,9 @@ namespace OpenTKBase
             {
                 foreach (var index in indices)
                 {
-                    if (colors != null) GL.Color4(colors[index]);
-                    if (normals != null) GL.Normal3(normals[index]);
-                    GL.Vertex3(vertices[index]);
+                    if (colors != null) GL.Color4(colors[(int)index]);
+                    if (normals != null) GL.Normal3(normals[(int)index]);
+                    GL.Vertex3(vertices[(int)index]);
                 }
             }
 
