@@ -1,5 +1,4 @@
-﻿using OpenTK.Graphics.OpenGL;
-using OpenTK.Mathematics;
+﻿using OpenTK.Mathematics;
 using OpenTKBase;
 using System;
 using System.Collections.Generic;
@@ -28,6 +27,7 @@ namespace SDLBase
 
             Material material = new Material(Shader.Find("Shaders/phong"));
             material.SetColor("Color", Color4.DarkGreen);
+            material.SetColor("ColorEmissive", Color4.Black);
 
             GameObject go = new GameObject();
             go.transform.position = new Vector3(0, 0, 0);
@@ -56,6 +56,7 @@ namespace SDLBase
 
             Material material = new Material(Shader.Find("Shaders/phong"));
             material.SetColor("Color", new Color4(rnd.Range(0.6f, 0.9f), rnd.Range(0.4f, 0.6f), rnd.Range(0.15f, 0.35f), 1.0f));
+            material.SetColor("ColorEmissive", Color4.Black);
 
             GameObject mainObject = new GameObject();
             mainObject.transform.position = new Vector3(rnd.Range(-s, s), 0, rnd.Range(-s, s));
@@ -69,6 +70,7 @@ namespace SDLBase
 
             material = new Material(Shader.Find("Shaders/phong"));
             material.SetColor("Color", new Color4(rnd.Range(0.0f, 0.2f), rnd.Range(0.6f, 0.8f), rnd.Range(0.0f, 0.2f), 1.0f));
+            material.SetColor("ColorEmissive", Color4.Black);
 
             GameObject leaveObj = new GameObject();
             leaveObj.transform.position = mainObject.transform.position + Vector3.UnitY * heightTrunk;
@@ -83,10 +85,21 @@ namespace SDLBase
         {
             var env = OpenTKApp.APP.mainScene.environment;
 
-            env.SetColor("Color", new Color4(0.5f, 0.5f, 0.5f, 1.0f));
+            env.SetColor("Color", new Color4(0.2f, 0.2f, 0.2f, 1.0f));
             env.SetColor("ColorTop", new Color4(0.0f, 1.0f, 1.0f, 1.0f));
             env.SetColor("ColorMid", new Color4(1.0f, 1.0f, 1.0f, 1.0f));
             env.SetColor("ColorBottom", new Color4(0.0f, 0.25f, 0.0f, 1.0f));
+        }
+
+        static void SetupLights()
+        {
+            // Setup directional light turned 30 degrees down
+            GameObject go = new GameObject();
+            go.transform.rotation = Quaternion.FromAxisAngle(Vector3.UnitX, -MathF.PI * 0.16f);
+            Light light = go.AddComponent<Light>();
+            light.type = Light.Type.Directional;
+            light.lightColor = Color.White;
+            light.intensity = 1.0f;
         }
 
         static (GameObject, Material) CreateSphere()
@@ -95,6 +108,7 @@ namespace SDLBase
 
             Material material = new Material(Shader.Find("Shaders/phong"));
             material.SetColor("Color", Color4.White);
+            material.SetColor("ColorEmissive", Color4.Black);
 
             GameObject go = new GameObject();
             go.transform.position = new Vector3(0, 2, -5);
@@ -114,10 +128,14 @@ namespace SDLBase
             var ret = CreateGround(forestSize);
 
             // Create a sphere in the middle of the forest
-            CreateSphere();
+            var (reflectSphere, reflectMaterial) = CreateSphere();
+            var (glowSphere, glowMaterial) = CreateSphere();
+            glowSphere.transform.position += Vector3.UnitX * 4.0f;
+            glowMaterial.SetColor("Color", Color4.Black);
+            glowMaterial.SetColor("ColorEmissive", Color4.Yellow);
 
             // Create trees
-            Random rnd = new Random();
+            Random rnd = new Random(0);
             for (int i = 0; i < 50; i++)
             {
                 CreateRandomTree(rnd, forestSize);
@@ -129,6 +147,8 @@ namespace SDLBase
         static void ExecuteApp_Forest(OpenTKApp app)
         {
             SetupEnvironment();
+
+            SetupLights();
 
             var ground = CreateForest();
 

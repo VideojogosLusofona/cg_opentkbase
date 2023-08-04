@@ -29,7 +29,9 @@ namespace OpenTKBase
 
         private struct Uniform
         {
-            public enum Type { Material, Matrix, Environment };
+            public enum Type { 
+                                Material, Matrix, Environment
+                            };
 
             public Type                 type;
             public string               name;
@@ -102,6 +104,7 @@ namespace OpenTKBase
         public const int Fragment = 1;
         public const int TypeMax = 2;
 
+        private string          name;
         private int             handle = -1;
         private List<Uniform>   uniforms;
 
@@ -136,6 +139,8 @@ namespace OpenTKBase
 
         public bool Load(string name)
         {
+            this.name = name;
+
             // Have found at least a file with the name "{name}.*"
             bool fileFound = false;
 
@@ -272,20 +277,31 @@ namespace OpenTKBase
 
         static private void SetUniformMaterial(Uniform u, Material material)
         {
-            switch (u.dataType)
+            // Check if property exists in material
+            if (material.GetProperty(u.name, out object value))
             {
-                case ActiveUniformType.FloatVec2:
-                    GL.Uniform2(u.slot, material.Get<Vector2>(u.name));
-                    break;
-                case ActiveUniformType.FloatVec3:
-                    GL.Uniform3(u.slot, material.Get<Vector3>(u.name));
-                    break;
-                case ActiveUniformType.FloatVec4:
-                    GL.Uniform4(u.slot, material.Get<Vector4>(u.name));
-                    break;
-                default:
-                    Console.WriteLine($"Unsupported uniform data type {u.dataType} (type={u.type}, name={u.name})!");
-                    break;
+                switch (u.dataType)
+                {
+                    case ActiveUniformType.Int:
+                        GL.Uniform1(u.slot, (int)value);
+                        break;
+                    case ActiveUniformType.FloatVec2:
+                        GL.Uniform2(u.slot, (Vector2)value);
+                        break;
+                    case ActiveUniformType.FloatVec3:
+                        GL.Uniform3(u.slot, (Vector3)value);
+                        break;
+                    case ActiveUniformType.FloatVec4:
+                        GL.Uniform4(u.slot, (Vector4)value);
+                        break;
+                    default:
+                        Console.WriteLine($"Unsupported uniform data type {u.dataType} (type={u.type}, name={u.name})!");
+                        break;
+                }
+            }
+            else
+            {
+                Console.WriteLine($"Material doesn't have property {u.name}!");
             }
         }
 
@@ -350,6 +366,21 @@ namespace OpenTKBase
                         dataSize = size,
                         dataType = type
                     });
+                }
+                else if (uniformName.StartsWith("Light"))
+                {
+                    uniforms.Add(new Uniform()
+                    {
+                        type = Uniform.Type.Environment,
+                        name = uniformName,
+                        slot = i,
+                        dataSize = size,
+                        dataType = type
+                    });
+                }
+                else
+                {
+                    Console.WriteLine($"Can't parse uniform {uniformName} in shader {name}!");
                 }
             }
         }

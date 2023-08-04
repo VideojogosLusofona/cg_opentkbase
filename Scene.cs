@@ -1,8 +1,5 @@
-﻿using System;
+﻿using OpenTK.Mathematics;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace OpenTKBase
 {
@@ -15,6 +12,16 @@ namespace OpenTKBase
         public Scene()
         {
             environment = new Material(null);
+            environment.SetInt("LightCount", 0);
+            for (int i = 0; i < 8; i++)
+            {
+                environment.SetInt($"Lights[{i}].type", 0);
+                environment.SetVector3($"Lights[{i}].position", Vector3.Zero);
+                environment.SetVector3($"Lights[{i}].direction", Vector3.UnitZ);
+                environment.SetColor($"Lights[{i}].color", Color4.White);
+                environment.SetFloat($"Lights[{i}].intensity", 1.0f);
+                environment.SetVector2($"Lights[{i}].spot", Vector2.Zero);
+            }
         }
 
         public void Add(GameObject go)

@@ -2,6 +2,7 @@
 using OpenTK.Mathematics;
 using OpenTK.Graphics.OpenGL;
 using System.Collections.Generic;
+using System.Drawing;
 
 namespace OpenTKBase
 {
@@ -16,24 +17,39 @@ namespace OpenTKBase
             properties = new Dictionary<string, object>();
         }
 
+        public void SetInt(string name, int v)
+        {
+            properties[name] = v;
+        }
+
+        public void SetFloat(string name, float v)
+        {
+            properties[name] = v;
+        }
+
         public void SetVector2(string name, Vector2 v)
         {
-            properties.Add(name, new Vector2(v.X, v.Y));
+            properties[name] = new Vector2(v.X, v.Y);
         }
         public void SetVector3(string name, Vector3 v)
         {
-            properties.Add(name, new Vector3(v.X, v.Y, v.Z));
+            properties[name] = new Vector3(v.X, v.Y, v.Z);
         }
         public void SetVector4(string name, Vector4 v)
         {
-            properties.Add(name, new Vector4(v.X, v.Y, v.Z, v.W));
+            properties[name] = new Vector4(v.X, v.Y, v.Z, v.W);
         }
 
         public void SetColor(string name, Color4 color)
         {
-            properties.Add(name, new Vector4(color.R, color.G, color.B, color.A));
+            properties[name] = new Vector4(color.R, color.G, color.B, color.A);
         }
 
         public T Get<T>(string name) => (T)properties[name];
+
+        public bool GetProperty(string name, out object value)
+        {
+            return properties.TryGetValue(name, out value);
+        }
     }
 }
