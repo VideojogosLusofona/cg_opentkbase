@@ -23,7 +23,7 @@ namespace SDLBase
 
         static GameObject CreateGround(float size)
         {
-            Mesh mesh = GeometryFactory.AddPlane(size, size);
+            Mesh mesh = GeometryFactory.AddPlane(size, size, 128);
 
             Material material = new Material(Shader.Find("Shaders/phong"));
             material.SetColor("Color", Color4.DarkGreen);
@@ -85,7 +85,7 @@ namespace SDLBase
         {
             var env = OpenTKApp.APP.mainScene.environment;
 
-            env.SetColor("Color", Color.Black);// new Color4(0.2f, 0.2f, 0.2f, 1.0f));
+            env.SetColor("Color", new Color4(0.2f, 0.2f, 0.2f, 1.0f));
             env.SetColor("ColorTop", new Color4(0.0f, 1.0f, 1.0f, 1.0f));
             env.SetColor("ColorMid", new Color4(1.0f, 1.0f, 1.0f, 1.0f));
             env.SetColor("ColorBottom", new Color4(0.0f, 0.25f, 0.0f, 1.0f));
@@ -95,13 +95,13 @@ namespace SDLBase
         {
             // Setup directional light turned 30 degrees down
             GameObject go = new GameObject();
-            go.transform.position = new Vector3(0.0f, 2.0f, 0.0f);
+            go.transform.position = new Vector3(0.0f, 3.0f, 0.0f);
             go.transform.rotation = Quaternion.FromAxisAngle(Vector3.UnitX, -MathF.PI * 0.16f);
             Light light = go.AddComponent<Light>();
-            light.type = Light.Type.Spot;
+            light.type = Light.Type.Point;
             light.lightColor = Color.White;
             light.intensity = 1.0f;
-            light.cone = new Vector2(0.0f, MathF.PI / 4.0f);
+            light.cone = new Vector2(0.0f, MathF.PI / 2.0f);
         }
 
         static (GameObject, Material) CreateSphere()
@@ -122,9 +122,26 @@ namespace SDLBase
             return (go, material);
         }
 
+        static void CreateSkysphere(float radius)
+        {
+            Mesh mesh = GeometryFactory.AddSphere(radius, 64, true);
+
+            Material material = new Material(Shader.Find("Shaders/skysphere"));
+
+            GameObject go = new GameObject();
+            go.transform.position = new Vector3(0, 0, 0);
+            MeshFilter mf = go.AddComponent<MeshFilter>();
+            mf.mesh = mesh;
+            MeshRenderer mr = go.AddComponent<MeshRenderer>();
+            mr.material = material;
+        }
+
         static GameObject CreateForest()
         {
             float forestSize = 120.0f;
+
+            // Create skysphere
+            CreateSkysphere(forestSize * 4.0f);
 
             // Create ground
             var ret = CreateGround(forestSize);

@@ -6,26 +6,52 @@ namespace OpenTKBase
 {
     public static class GeometryFactory
     {
-        public static Mesh AddPlane(float sizeX, float sizeZ)
+        public static Mesh AddPlane(float sizeX, float sizeZ, uint subdivs = 1)
         {
             Mesh            ret = new Mesh();
             List<Vector3>   vertices = new List<Vector3>();
             List<Vector3>   normals = new List<Vector3>();
-            List<int>       indices = new List<int>();
+            List<uint>      indices = new List<uint>();
 
             float sx = sizeX * 0.5f;
+            float incX = sizeX / subdivs;
             float sz = sizeZ * 0.5f;
+            float incZ = sizeZ / subdivs;
 
-            vertices.Add(new Vector3(-sx, 0.0f, -sz)); normals.Add(new Vector3(0.0f, 1.0f, 0.0f));
-            vertices.Add(new Vector3(-sx, 0.0f,  sz)); normals.Add(new Vector3(0.0f, 1.0f, 0.0f));
-            vertices.Add(new Vector3( sx, 0.0f,  sz)); normals.Add(new Vector3(0.0f, 1.0f, 0.0f));
+            float x = -sx;
+            float z = -sz;
 
-            vertices.Add(new Vector3(-sx, 0.0f, -sz)); normals.Add(new Vector3(0.0f, 1.0f, 0.0f));
-            vertices.Add(new Vector3( sx, 0.0f,  sz)); normals.Add(new Vector3(0.0f, 1.0f, 0.0f));
-            vertices.Add(new Vector3( sx, 0.0f, -sz)); normals.Add(new Vector3(0.0f, 1.0f, 0.0f));
+            for (int i = 0; i <= subdivs; i++)
+            {
+                x = -sx;
+                for (int j = 0; j <= subdivs; j++)
+                {
+                    vertices.Add(new Vector3(x, 0.0f, z)); normals.Add(Vector3.UnitY);
+                    x += incX;
+                }
+
+                z += incZ;
+            }
+
+            uint stride = subdivs + 1;
+
+            for (uint i = 0; i < subdivs; i++)
+            {
+                for (uint j = 0; j < subdivs; j++)
+                {
+                    indices.Add(i * stride + j);
+                    indices.Add((i + 1) * stride + j);
+                    indices.Add((i + 1) * stride + (j + 1));
+
+                    indices.Add(i * stride + j);
+                    indices.Add((i + 1) * stride + (j + 1));
+                    indices.Add(i * stride + (j + 1));
+                }
+            }
 
             ret.SetVertices(vertices);
             ret.SetNormals(normals);
+            ret.SetIndices(indices);
 
             return ret;
         }
@@ -125,7 +151,7 @@ namespace OpenTKBase
             return ret;
         }
 
-        public static Mesh AddSphere(float radius, int sides = 16)
+        public static Mesh AddSphere(float radius, int sides = 16, bool invertCull = false)
         {
             Mesh ret = new Mesh();
             List<Vector3> vertices = new List<Vector3>();
@@ -172,6 +198,16 @@ namespace OpenTKBase
                     indices.Add((uint)(yIndex0 + xz));
                     indices.Add((uint)(yIndex1 + (xz + 1) % sides));
                     indices.Add((uint)(yIndex1 + xz));
+                }
+            }
+
+            if (invertCull)
+            {
+                for (int i = 0; i < indices.Count; i += 3)
+                {
+                    uint tmp = indices[i + 1];
+                    indices[i + 1] = indices[i + 2];
+                    indices[i + 2] = tmp;
                 }
             }
 
