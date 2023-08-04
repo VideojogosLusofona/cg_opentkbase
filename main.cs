@@ -22,7 +22,7 @@ namespace SDLBase
             app.Shutdown();
         }
 
-        static void CreateGround(float size)
+        static GameObject CreateGround(float size)
         {
             Mesh mesh = GeometryFactory.AddPlane(size, size);
 
@@ -35,6 +35,8 @@ namespace SDLBase
             mf.mesh = mesh;
             MeshRenderer mr = go.AddComponent<MeshRenderer>();
             mr.material = material;
+
+            return go;
         }
 
         static float Range(this Random rnd, float a, float b)
@@ -77,12 +79,22 @@ namespace SDLBase
             mr.material = material;
         }
 
-        static void ExecuteApp_Forest(OpenTKApp app)
+        static void SetupEnvironment()
+        {
+            var env = OpenTKApp.APP.mainScene.environment;
+
+            env.SetColor("Color", new Color4(0.05f, 0.05f, 0.4f, 1.0f));
+            env.SetColor("ColorTop", new Color4(0.0f, 1.0f, 1.0f, 1.0f));
+            env.SetColor("ColorMid", new Color4(1.0f, 1.0f, 1.0f, 1.0f));
+            env.SetColor("ColorBottom", new Color4(0.0f, 0.25f, 0.0f, 1.0f));
+        }
+
+        static GameObject CreateForest()
         {
             float forestSize = 120.0f;
 
             // Create ground
-            CreateGround(forestSize);
+            var ret = CreateGround(forestSize);
 
             // Create trees
             Random rnd = new Random();
@@ -90,6 +102,15 @@ namespace SDLBase
             {
                 CreateRandomTree(rnd, forestSize);
             }
+
+            return ret;
+        }
+
+        static void ExecuteApp_Forest(OpenTKApp app)
+        {
+            SetupEnvironment();
+
+            var ground = CreateForest();
 
             // Create camera
             GameObject cameraObject = new GameObject();

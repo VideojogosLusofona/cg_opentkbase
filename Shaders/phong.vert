@@ -1,13 +1,27 @@
 ﻿#version 330 core
 layout (location = 0) in vec3 position;
+layout (location = 1) in vec3 normal;
 
 uniform vec4 MaterialColor = vec4(1,1,0,1);
 uniform mat4 MatrixClip;
+uniform mat4 MatrixWorld;
+uniform vec4 EnvColorTop;
+uniform vec4 EnvColorMid;
+uniform vec4 EnvColorBottom;
 
 out vec4 fragColor;
 
 void main()
 {
-    fragColor = MaterialColor;
+    vec3 n = (MatrixWorld * vec4(normal, 0)).xyz;
+    float d = dot(n,vec3(0,1,0));
+    vec4  skyColor;
+    if (d < 0)
+        skyColor = mix(EnvColorMid, EnvColorBottom, clamp(-d, 0, 1));
+    else
+        skyColor = mix(EnvColorMid, EnvColorTop, clamp(d, 0, 1));
+
+    fragColor = skyColor;
+
     gl_Position = MatrixClip * vec4(position, 1.0);
 }

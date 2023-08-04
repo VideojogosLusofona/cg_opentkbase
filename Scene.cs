@@ -10,8 +10,11 @@ namespace OpenTKBase
     {
         private List<GameObject> objects = new List<GameObject>();
 
+        public Material environment { get; private set; }
+
         public Scene()
         {
+            environment = new Material(null);
         }
 
         public void Add(GameObject go)
