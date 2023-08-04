@@ -83,10 +83,27 @@ namespace SDLBase
         {
             var env = OpenTKApp.APP.mainScene.environment;
 
-            env.SetColor("Color", new Color4(0.05f, 0.05f, 0.4f, 1.0f));
+            env.SetColor("Color", new Color4(0.5f, 0.5f, 0.5f, 1.0f));
             env.SetColor("ColorTop", new Color4(0.0f, 1.0f, 1.0f, 1.0f));
             env.SetColor("ColorMid", new Color4(1.0f, 1.0f, 1.0f, 1.0f));
             env.SetColor("ColorBottom", new Color4(0.0f, 0.25f, 0.0f, 1.0f));
+        }
+
+        static (GameObject, Material) CreateSphere()
+        {
+            Mesh mesh = GeometryFactory.AddSphere(2.0f, 32);
+
+            Material material = new Material(Shader.Find("Shaders/phong"));
+            material.SetColor("Color", Color4.White);
+
+            GameObject go = new GameObject();
+            go.transform.position = new Vector3(0, 2, -5);
+            MeshFilter mf = go.AddComponent<MeshFilter>();
+            mf.mesh = mesh;
+            MeshRenderer mr = go.AddComponent<MeshRenderer>();
+            mr.material = material;
+
+            return (go, material);
         }
 
         static GameObject CreateForest()
@@ -95,6 +112,9 @@ namespace SDLBase
 
             // Create ground
             var ret = CreateGround(forestSize);
+
+            // Create a sphere in the middle of the forest
+            CreateSphere();
 
             // Create trees
             Random rnd = new Random();

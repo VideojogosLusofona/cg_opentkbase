@@ -87,11 +87,11 @@ namespace OpenTKBase
             {
                 indices.Add(startSide + (i * 2));
                 indices.Add(startSide + ((i * 2) + 1) % sideCount);
-                indices.Add(startSide + ((i * 2) * 2 + 1) % sideCount);
+                indices.Add(startSide + ((i * 2) + 2 + 1) % sideCount);
 
                 indices.Add(startSide + (i * 2));
-                indices.Add(startSide + ((i * 2) * 2 + 1) % sideCount);
-                indices.Add(startSide + ((i * 2) * 2) % sideCount);
+                indices.Add(startSide + ((i * 2) + 2 + 1) % sideCount);
+                indices.Add(startSide + ((i * 2) + 2) % sideCount);
             }
 
             // Top vertex

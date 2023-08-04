@@ -5,6 +5,7 @@ layout (location = 1) in vec3 normal;
 uniform vec4 MaterialColor = vec4(1,1,0,1);
 uniform mat4 MatrixClip;
 uniform mat4 MatrixWorld;
+uniform vec4 EnvColor;
 uniform vec4 EnvColorTop;
 uniform vec4 EnvColorMid;
 uniform vec4 EnvColorBottom;
@@ -21,7 +22,7 @@ void main()
     else
         skyColor = mix(EnvColorMid, EnvColorTop, clamp(d, 0, 1));
 
-    fragColor = skyColor;
+    fragColor = EnvColor * MaterialColor * skyColor;
 
     gl_Position = MatrixClip * vec4(position, 1.0);
 }
