@@ -1,4 +1,5 @@
 ﻿using OpenTK.Graphics.OpenGL;
+using OpenTK.Mathematics;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,11 +12,98 @@ namespace OpenTKBase
 {
     public class Shader
     {
+        public enum MatrixType { Identity = 0, Clip = 1, Projection = 2, Camera = 3, World = 4, Max = 5 };
+
+        static public MatrixType StringToMatrixType(string m)
+        {
+            switch (m)
+            {
+                case "Clip": return MatrixType.Clip;
+                case "Projection": return MatrixType.Projection;
+                case "Camera": return MatrixType.Camera;
+                case "World": return MatrixType.World;
+            }
+
+            return MatrixType.Identity;
+        }
+
+        private struct Uniform
+        {
+            public enum Type { Material, Matrix };
+
+            public Type                 type;
+            public string               name;
+            public MatrixType           matrixType;
+            public ActiveUniformType    dataType;
+            public int                  dataSize;
+            public int                  slot;
+        }
+
+        private class MatrixData
+        {
+            public MatrixData(MatrixType type) { this.type = type; }
+
+            private MatrixType  type;
+            private bool        dirty;
+            private Matrix4     matrix;
+
+            public Matrix4 Get()
+            {
+                if (!dirty) return matrix;
+
+                switch (type)
+                {
+                    case MatrixType.Clip:
+                        matrix = currentMatrices[(int)MatrixType.World].matrix * currentMatrices[(int)MatrixType.Camera].matrix * currentMatrices[(int)MatrixType.Projection].matrix;
+                        break;
+                }
+
+                dirty = false;
+                return matrix;
+            }
+
+            public void Set(Matrix4 matrix)
+            {
+                this.matrix = matrix;
+
+                switch (type)
+                {
+                    case MatrixType.Projection:
+                        currentMatrices[(int)(MatrixType.Clip)].dirty = true;
+                        break;
+                    case MatrixType.Camera:
+                        currentMatrices[(int)(MatrixType.Clip)].dirty = true;
+                        break;
+                    case MatrixType.World:
+                        currentMatrices[(int)(MatrixType.Clip)].dirty = true;
+                        break;
+                    default:
+                        break;
+                }
+            }
+        };
+
+        static private MatrixData[] currentMatrices;
+
+        static public void SetMatrix(MatrixType type, Matrix4 matrix)
+        {
+            if (currentMatrices == null)
+            {
+                currentMatrices = new MatrixData[(int)MatrixType.Max];
+                for (int i = 0; i < (int)MatrixType.Max; i++)
+                {
+                    currentMatrices[i] = new MatrixData((MatrixType)i);
+                }
+            }
+            currentMatrices[(int)type].Set(matrix);
+        }
+
         public const int Vertex = 0;
         public const int Fragment = 1;
         public const int TypeMax = 2;
 
-        private int handle = -1;
+        private int             handle = -1;
+        private List<Uniform>   uniforms;
 
         ~Shader()
         {
@@ -144,6 +232,8 @@ namespace OpenTKBase
                 return false;
             }
 
+            ParseUniforms();
+
             // Process has completed successfully
             return true;
         }
@@ -153,11 +243,99 @@ namespace OpenTKBase
             return GL.GetAttribLocation(handle, attributeName);
         }
 
-        public void Set()
+        public void Set(Material material)
         {
             if (handle != -1)
             {
                 GL.UseProgram(handle);
+
+                // Process uniforms
+                foreach (var u in uniforms)
+                {
+                    switch (u.type)
+                    {
+                        case Uniform.Type.Material:
+                            if (material != null) SetUniformMaterial(u, material);
+                            break;
+                        case Uniform.Type.Matrix:
+                            if (material != null) SetUniformMatrix(u, material);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+        }
+
+        static private void SetUniformMaterial(Uniform u, Material material)
+        {
+            switch (u.dataType)
+            {
+                case ActiveUniformType.FloatVec2:
+                    GL.Uniform2(u.slot, material.Get<Vector2>(u.name));
+                    break;
+                case ActiveUniformType.FloatVec3:
+                    GL.Uniform3(u.slot, material.Get<Vector3>(u.name));
+                    break;
+                case ActiveUniformType.FloatVec4:
+                    GL.Uniform4(u.slot, material.Get<Vector4>(u.name));
+                    break;
+                default:
+                    Console.WriteLine($"Unsupported uniform data type {u.dataType} (type={u.type}, name={u.name})!");
+                    break;
+            }
+        }
+
+        static private void SetUniformMatrix(Uniform u, Material material)
+        {
+            switch (u.dataType)
+            {
+                case ActiveUniformType.FloatMat4:
+                    // See if matrix needs to be refresh
+                    var matrix = currentMatrices[(int)u.matrixType].Get();
+                    GL.UniformMatrix4(u.slot, false, ref matrix);
+                    break;
+                default:
+                    Console.WriteLine($"Unsupported matrix uniform data type {u.dataType} (type={u.matrixType}, name={u.name})!");
+                    break;
+            }
+        }
+
+        public void ParseUniforms()
+        {
+            uniforms = new List<Uniform>();
+
+            // Get number of uniforms
+            GL.GetProgram(handle, GetProgramParameterName.ActiveUniforms, out int numUniforms);
+            for (int i = 0; i < numUniforms; i++)
+            {
+                GL.GetActiveUniform(handle, i, 256, out int length, out int size, out ActiveUniformType type, out string uniformName);
+
+                if (uniformName.StartsWith("Material"))
+                {
+                    // This is a material property
+                    uniforms.Add(new Uniform()
+                    {
+                        type = Uniform.Type.Material,
+                        name = uniformName.Substring(8),
+                        slot = i,
+                        dataSize = size,
+                        dataType = type
+                    });
+                }
+                else if (uniformName.StartsWith("Matrix"))
+                {
+                    // This is a material property
+                    uniforms.Add(new Uniform()
+                    {
+                        type = Uniform.Type.Matrix,
+                        name = uniformName.Substring(6),
+                        matrixType = StringToMatrixType(uniformName.Substring(6)),
+                        slot = i,
+                        dataSize = size,
+                        dataType = type
+                    });
+                }
             }
         }
 

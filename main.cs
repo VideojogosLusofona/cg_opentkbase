@@ -16,8 +16,8 @@ namespace SDLBase
             app.Initialize();
             app.LockMouse(true);
 
-            //ExecuteApp_Forest(app);
-            ExecuteApp_NoTransform(app);
+            ExecuteApp_Forest(app);
+            //ExecuteApp_NoTransform(app);
 
             app.Shutdown();
         }
@@ -26,8 +26,8 @@ namespace SDLBase
         {
             Mesh mesh = GeometryFactory.AddPlane(size, size);
 
-            Material material = new Material(Shader.Find("simple"));
-            material.color = Color4.DarkGreen;
+            Material material = new Material(Shader.Find("Shaders/phong"));
+            material.SetColor("Color", Color4.DarkGreen);
 
             GameObject go = new GameObject();
             go.transform.position = new Vector3(0, 0, 0);
@@ -52,8 +52,8 @@ namespace SDLBase
 
             Mesh mesh = GeometryFactory.AddCylinder(widthTrunk, heightTrunk, 8);
 
-            Material material = new Material(Shader.Find("simple"));
-            material.color = new Color4(200, 128, 64, 255);
+            Material material = new Material(Shader.Find("Shaders/phong"));
+            material.SetColor("Color", new Color4(rnd.Range(0.6f, 0.9f), rnd.Range(0.4f, 0.6f), rnd.Range(0.15f, 0.35f), 1.0f));
 
             GameObject mainObject = new GameObject();
             mainObject.transform.position = new Vector3(rnd.Range(-s, s), 0, rnd.Range(-s, s));
@@ -65,8 +65,8 @@ namespace SDLBase
             // Leaves
             mesh = GeometryFactory.AddCylinder(rnd.Range(widthTrunk * 1.5f, widthTrunk * 4.0f), rnd.Range(heightTrunk * 2.0f, heightTrunk * 8.0f));
 
-            material = new Material(Shader.Find("simple"));
-            material.color = Color.Green;
+            material = new Material(Shader.Find("Shaders/phong"));
+            material.SetColor("Color", new Color4(rnd.Range(0.0f, 0.2f), rnd.Range(0.6f, 0.8f), rnd.Range(0.0f, 0.2f), 1.0f));
 
             GameObject leaveObj = new GameObject();
             leaveObj.transform.position = mainObject.transform.position + Vector3.UnitY * heightTrunk;
@@ -97,38 +97,6 @@ namespace SDLBase
             camera.transform.position = new Vector3(0.0f, 2.0f, 0.0f);
             camera.ortographic = false;
             FirstPersonController fps = cameraObject.AddComponent<FirstPersonController>();
-
-            // Create pipeline
-            RPSIM renderPipeline = new RPSIM();
-
-            app.Run(() =>
-            {
-                app.Render(renderPipeline);
-            });
-        }
-
-        static void ExecuteApp_NoTransform(OpenTKApp app)
-        {
-            // Create a mesh (NDC coordinates)
-            Mesh mesh = new Mesh();
-            mesh.SetVertices(new List<Vector3>() { new Vector3(0.0f, 0.5f, 0.5f), new Vector3(-0.5f, -0.5f, 0.5f), new Vector3(0.5f, -0.5f, 0.5f) });
-            mesh.SetColors(new List<Color4>() { Color.Yellow, Color.Red, Color.Green });
-
-            Material material = new Material(Shader.Find("Shaders/vertex_color"));
-
-            GameObject go = new GameObject();
-            go.transform.position = new Vector3(0, 0, 0);
-            MeshFilter mf = go.AddComponent<MeshFilter>();
-            mf.mesh = mesh;
-            MeshRenderer mr = go.AddComponent<MeshRenderer>();
-            mr.material = material;
-
-            // Create camera - Doesn't matter for now the type of camera,
-            // we just use to clear the screen.
-            GameObject cameraObject = new GameObject();
-            Camera camera = cameraObject.AddComponent<Camera>();
-            camera.transform.position = new Vector3(0.0f, 2.0f, 0.0f);
-            camera.ortographic = false;
 
             // Create pipeline
             RPS renderPipeline = new RPS();

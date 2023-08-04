@@ -65,8 +65,8 @@ namespace OpenTKBase
                 vertices.Add(p2); normals.Add(n2);
 
                 vertices.Add(topVertex); normals.Add(Vector3.UnitY);
-                vertices.Add(p3); normals.Add(Vector3.UnitY);
                 vertices.Add(p4); normals.Add(Vector3.UnitY);
+                vertices.Add(p3); normals.Add(Vector3.UnitY);
 
                 angle += angleInc;
             }

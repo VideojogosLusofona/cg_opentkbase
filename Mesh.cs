@@ -12,11 +12,13 @@ namespace OpenTKBase
         private List<Vector3>   vertices;
         private List<Vector3>   normals;
         private List<Color4>    colors;
-        private List<int>       indices;
+        private List<uint>      indices;
 
-        private bool            dirty = true;
+        private bool            vertexDirty = true;
+        private bool            indexDirty = false;
 
         private int             vbo = -1;
+        private int             ibo = -1;
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         private struct VertexData
@@ -37,17 +39,18 @@ namespace OpenTKBase
             }
         }
         
-        public void SetIndices(List<int> indices)
+        public void SetIndices(List<uint> indices)
         {
             this.indices = indices;
+            indexDirty = true;
         }
 
-        public List<int> GetIndices() => indices;
+        public List<uint> GetIndices() => indices;
 
         public void SetVertices(List<Vector3> vertices)
         {
             this.vertices = vertices;
-            dirty = true;
+            vertexDirty = true;
         }
 
         public List<Vector3> GetVertices() => vertices;
@@ -55,7 +58,7 @@ namespace OpenTKBase
         public void SetNormals(List<Vector3> normals)
         {
             this.normals = normals;
-            dirty = true;
+            vertexDirty = true;
         }
 
         public List<Vector3> GetNormals() => normals;
@@ -63,7 +66,7 @@ namespace OpenTKBase
         public void SetColors(List<Color4> colors)
         {
             this.colors = colors;
-            dirty = true;
+            vertexDirty = true;
         }
 
         public List<Color4> GetColors() => colors;
@@ -87,9 +90,9 @@ namespace OpenTKBase
             {
                 foreach (var index in indices)
                 {
-                    if (colors != null) GL.Color4(colors[index]);
-                    if (normals != null) GL.Normal3(normals[index]);
-                    GL.Vertex3(vertices[index]);
+                    if (colors != null) GL.Color4(colors[(int)index]);
+                    if (normals != null) GL.Normal3(normals[(int)index]);
+                    GL.Vertex3(vertices[(int)index]);
                 }
             }
 
@@ -98,22 +101,34 @@ namespace OpenTKBase
 
         public void Render(Material material)
         {
+            // Retrieve shader, if there isn't a shader, do nothing
             Shader shader = material.shader;
             if (shader == null) return;
 
-            if (dirty)
-            {
-                Update();
-            }
+            // Update VBO, if data was modified
+            if (vertexDirty) UpdateVertex();
 
+            // Create or retrieve VAO
             int vao = GetVAO(shader);
-
-            shader.Set();
             GL.BindVertexArray(vao);
-            GL.DrawArrays(PrimitiveType.Triangles, 0, vertices.Count);
+
+            // Setup shader
+            shader.Set(material);
+
+            // Render
+            if (indices == null)
+            {
+                GL.DrawArrays(primitive, 0, vertices.Count);
+            }
+            else
+            {
+                if (indexDirty) UpdateIndex();
+
+                GL.DrawElements(primitive, indices.Count, DrawElementsType.UnsignedInt, 0);
+            }
         }
 
-        public void Update()
+        public void UpdateVertex()
         {
             if (vbo != -1)
             {
@@ -136,7 +151,32 @@ namespace OpenTKBase
             GL.BindBuffer(BufferTarget.ArrayBuffer, vbo);
             GL.BufferData(BufferTarget.ArrayBuffer, VertexData.SizeInBytes * vertices.Count, marshallData, BufferUsageHint.StaticDraw);
 
-            dirty = false;
+            vertexDirty = false;
+        }
+        public void UpdateIndex()
+        {
+            // This function assumes a VAO was already bound
+
+            if (ibo != -1)
+            {
+                // Guarantee that this buffer is not in use
+                GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
+                GL.DeleteBuffer(ibo);
+            }
+
+            // Create IBO
+            ibo = GL.GenBuffer();
+
+            // Marshalling
+            uint[] marshallData = indices.ToArray();
+
+            // Bind buffer
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, ibo);
+            // Set data
+            GL.BufferData(BufferTarget.ElementArrayBuffer, sizeof(uint) * indices.Count, marshallData, BufferUsageHint.StaticDraw);
+
+            // Reset dirty flag
+            indexDirty = false;
         }
 
         // Dictionary that contains the links between this mesh and any shader that's needed

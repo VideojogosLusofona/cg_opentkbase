@@ -27,24 +27,10 @@ namespace OpenTKBase
         {
             var material = this.material;
 
+            Shader.SetMatrix(Shader.MatrixType.World, transform.localToWorldMatrix);
+
             var mf = GetComponent<MeshFilter>();
             mf.mesh.Render(material);
-        }
-
-        public override void RenderImmediate(Camera camera)
-        {
-            var worldMatrix = transform.localToWorldMatrix;
-            var cameraMatrix = camera.transform.worldToLocalMatrix;
-            var matrix = worldMatrix * cameraMatrix;
-
-            GL.MatrixMode(MatrixMode.Modelview);
-            GL.LoadMatrix(ref matrix);
-
-            var material = this.material;
-            material?.SetImmediate();
-
-            var mf = GetComponent<MeshFilter>();
-            mf?.mesh?.RenderImmediate();
         }
     }
 }
