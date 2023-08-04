@@ -45,7 +45,7 @@ vec3 ComputeSpot(Light light, vec3 worldPos, vec3 worldNormal)
     float d = clamp(-dot(worldNormal, lightDir), 0, 1);
     float spot = (acos(dot(lightDir, light.direction)) - light.spot.x) / (light.spot.y - light.spot.x);
 
-    d = d * mix(1, 0, spot);
+    d = d * mix(1, 0, clamp(spot, 0, 1));
     
     return d * light.color.rgb * light.intensity;
 }
