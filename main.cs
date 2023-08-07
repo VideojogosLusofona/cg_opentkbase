@@ -28,6 +28,7 @@ namespace SDLBase
             Material material = new Material(Shader.Find("Shaders/phong"));
             material.SetColor("Color", Color4.DarkGreen);
             material.SetColor("ColorEmissive", Color4.Black);
+            material.SetVector2("Specular", new Vector2(2.0f, 128.0f));
 
             GameObject go = new GameObject();
             go.transform.position = new Vector3(0, 0, 0);
@@ -57,6 +58,7 @@ namespace SDLBase
             Material material = new Material(Shader.Find("Shaders/phong"));
             material.SetColor("Color", new Color4(rnd.Range(0.6f, 0.9f), rnd.Range(0.4f, 0.6f), rnd.Range(0.15f, 0.35f), 1.0f));
             material.SetColor("ColorEmissive", Color4.Black);
+            material.SetVector2("Specular", Vector2.UnitY);
 
             GameObject mainObject = new GameObject();
             mainObject.transform.position = new Vector3(rnd.Range(-s, s), 0, rnd.Range(-s, s));
@@ -71,6 +73,7 @@ namespace SDLBase
             material = new Material(Shader.Find("Shaders/phong"));
             material.SetColor("Color", new Color4(rnd.Range(0.0f, 0.2f), rnd.Range(0.6f, 0.8f), rnd.Range(0.0f, 0.2f), 1.0f));
             material.SetColor("ColorEmissive", Color4.Black);
+            material.SetVector2("Specular", Vector2.UnitY);
 
             GameObject leaveObj = new GameObject();
             leaveObj.transform.position = mainObject.transform.position + Vector3.UnitY * heightTrunk;
@@ -91,7 +94,7 @@ namespace SDLBase
             env.SetColor("ColorBottom", new Color4(0.0f, 0.25f, 0.0f, 1.0f));
         }
 
-        static void SetupLights()
+        static GameObject SetupLights()
         {
             // Setup directional light turned 30 degrees down
             GameObject go = new GameObject();
@@ -102,15 +105,18 @@ namespace SDLBase
             light.lightColor = Color.White;
             light.intensity = 1.0f;
             light.cone = new Vector2(0.0f, MathF.PI / 2.0f);
+
+            return go;
         }
 
         static (GameObject, Material) CreateSphere()
         {
-            Mesh mesh = GeometryFactory.AddSphere(1.0f, 32);
+            Mesh mesh = GeometryFactory.AddSphere(0.5f, 32);
 
             Material material = new Material(Shader.Find("Shaders/phong"));
             material.SetColor("Color", Color4.White);
             material.SetColor("ColorEmissive", Color4.Black);
+            material.SetVector2("Specular", Vector2.UnitY);
 
             GameObject go = new GameObject();
             go.transform.position = new Vector3(0, 2, -5);
@@ -136,7 +142,7 @@ namespace SDLBase
             mr.material = material;
         }
 
-        static GameObject CreateForest()
+        static GameObject CreateForest(GameObject light)
         {
             float forestSize = 120.0f;
 
@@ -149,7 +155,7 @@ namespace SDLBase
             // Create a sphere in the middle of the forest
             var (reflectSphere, reflectMaterial) = CreateSphere();
             var (glowSphere, glowMaterial) = CreateSphere();
-            glowSphere.transform.position += Vector3.UnitX * 4.0f - Vector3.UnitZ * 2.0f;
+            glowSphere.transform.position = light.transform.position;
             glowMaterial.SetColor("Color", Color4.Black);
             glowMaterial.SetColor("ColorEmissive", Color4.Yellow);
 
@@ -167,9 +173,9 @@ namespace SDLBase
         {
             SetupEnvironment();
 
-            SetupLights();
+            var light = SetupLights();
 
-            var ground = CreateForest();
+            var ground = CreateForest(light);
 
             // Create camera
             GameObject cameraObject = new GameObject();

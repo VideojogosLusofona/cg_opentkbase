@@ -34,6 +34,7 @@ namespace OpenTKBase
                 GL.Clear(camera.GetClearFlags());
 
                 Shader.SetMatrix(Shader.MatrixType.Camera, camera.transform.worldToLocalMatrix);
+                Shader.SetMatrix(Shader.MatrixType.InvCamera, camera.transform.localToWorldMatrix);
                 Shader.SetMatrix(Shader.MatrixType.Projection, camera.projection);
 
                 foreach (var render in allRender)

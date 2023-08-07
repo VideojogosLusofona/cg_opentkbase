@@ -12,7 +12,7 @@ namespace OpenTKBase
 {
     public class Shader
     {
-        public enum MatrixType { Identity = 0, Clip = 1, Projection = 2, Camera = 3, World = 4, Max = 5 };
+        public enum MatrixType { Identity = 0, Clip = 1, Projection = 2, Camera = 3, InvCamera = 4, World = 5, Max = 6 };
 
         static public MatrixType StringToMatrixType(string m)
         {
@@ -30,7 +30,8 @@ namespace OpenTKBase
         private struct Uniform
         {
             public enum Type { 
-                                Material, Matrix, Environment
+                                Material, Matrix, Environment, 
+                                ViewPos, ViewDir
                             };
 
             public Type                 type;
@@ -71,11 +72,8 @@ namespace OpenTKBase
                 switch (type)
                 {
                     case MatrixType.Projection:
-                        currentMatrices[(int)(MatrixType.Clip)].dirty = true;
-                        break;
                     case MatrixType.Camera:
-                        currentMatrices[(int)(MatrixType.Clip)].dirty = true;
-                        break;
+                    case MatrixType.InvCamera:
                     case MatrixType.World:
                         currentMatrices[(int)(MatrixType.Clip)].dirty = true;
                         break;
@@ -252,6 +250,8 @@ namespace OpenTKBase
         {
             if (handle != -1)
             {
+                Matrix4 viewMatrix;
+
                 GL.UseProgram(handle);
 
                 // Process uniforms
@@ -267,6 +267,16 @@ namespace OpenTKBase
                             break;
                         case Uniform.Type.Environment:
                             if (OpenTKApp.APP.mainScene.environment != null) SetUniformMaterial(u, OpenTKApp.APP.mainScene.environment);
+                            break;
+                        case Uniform.Type.ViewPos:
+                            viewMatrix = currentMatrices[(int)MatrixType.InvCamera].Get();
+                            var viewPos = (Vector4.UnitW * viewMatrix).Xyz;
+                            GL.Uniform3(u.slot, viewPos);
+                            break;
+                        case Uniform.Type.ViewDir:
+                            viewMatrix = currentMatrices[(int)MatrixType.InvCamera].Get();
+                            var viewDir = (Vector4.UnitZ * viewMatrix).Xyz;
+                            GL.Uniform3(u.slot, viewDir);
                             break;
                         default:
                             break;
@@ -381,6 +391,8 @@ namespace OpenTKBase
                         dataType = type
                     });
                 }
+                else if (uniformName == "ViewPos") uniforms.Add(new Uniform() { type = Uniform.Type.ViewPos, name = uniformName, slot = i, dataSize = size, dataType = type });
+                else if (uniformName == "ViewDir") uniforms.Add(new Uniform() { type = Uniform.Type.ViewDir, name = uniformName, slot = i, dataSize = size, dataType = type });
                 else
                 {
                     Console.WriteLine($"Can't parse uniform {uniformName} in shader {name}!");

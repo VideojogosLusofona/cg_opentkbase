@@ -3,6 +3,7 @@ layout (location = 0) in vec3 position;
 layout (location = 1) in vec3 normal;
 
 uniform vec4 MaterialColor = vec4(1,1,0,1);
+uniform vec2 MaterialSpecular = vec2(0, 1);
 uniform vec4 MaterialColorEmissive = vec4(0,0,0,1);
 uniform mat4 MatrixClip;
 uniform mat4 MatrixWorld;
@@ -10,6 +11,7 @@ uniform vec4 EnvColor;
 uniform vec4 EnvColorTop;
 uniform vec4 EnvColorMid;
 uniform vec4 EnvColorBottom;
+uniform vec3 ViewPos;
 
 const int MAX_LIGHTS = 8;
 struct Light
@@ -29,14 +31,19 @@ out vec4 fragColor;
 vec3 ComputeDirectional(Light light, vec3 worldPos, vec3 worldNormal)
 {
     float d = clamp(-dot(worldNormal, light.direction), 0, 1);
-    return d * light.color.rgb * light.intensity;
+    return d * light.color.rgb * light.intensity * MaterialColor.xyz;
 }
 
 vec3 ComputePoint(Light light, vec3 worldPos, vec3 worldNormal)
 {
     vec3  lightDir = normalize(worldPos - light.position);
     float d = clamp(-dot(worldNormal, lightDir), 0, 1);
-    return d * light.color.rgb * light.intensity;
+    vec3  v = normalize(ViewPos - worldPos);
+    // Light dir is from light to point, but we want the other way around, hence the V - L
+    vec3  h =  normalize(v - lightDir);
+    float s = MaterialSpecular.x * pow(max(dot(h, worldNormal), 0), MaterialSpecular.y);
+
+    return clamp(d * MaterialColor.xyz + s, 0, 1) * light.color.rgb * light.intensity;
 }
 
 vec3 ComputeSpot(Light light, vec3 worldPos, vec3 worldNormal)
@@ -47,7 +54,7 @@ vec3 ComputeSpot(Light light, vec3 worldPos, vec3 worldNormal)
 
     d = d * mix(1, 0, clamp(spot, 0, 1));
     
-    return d * light.color.rgb * light.intensity;
+    return d * light.color.rgb * light.intensity * MaterialColor.xyz;
 }
 
 vec3 ComputeLight(Light light, vec3 worldPos, vec3 worldNormal)
@@ -92,7 +99,7 @@ void main()
     }    
 
     // Add all lighting components
-    fragColor = envLighting + emissiveLighting + vec4(directLight * MaterialColor.xyz, 0);
+    fragColor = envLighting + emissiveLighting + vec4(directLight, 0);
 
     gl_Position = MatrixClip * vec4(position, 1.0);
 }
