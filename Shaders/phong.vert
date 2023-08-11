@@ -31,7 +31,12 @@ out vec4 fragColor;
 vec3 ComputeDirectional(Light light, vec3 worldPos, vec3 worldNormal)
 {
     float d = clamp(-dot(worldNormal, light.direction), 0, 1);
-    return d * light.color.rgb * light.intensity * MaterialColor.xyz;
+    vec3  v = normalize(ViewPos - worldPos);
+    // Light dir is from light to point, but we want the other way around, hence the V - L
+    vec3  h =  normalize(v - light.direction);
+    float s = MaterialSpecular.x * pow(max(dot(h, worldNormal), 0), MaterialSpecular.y);
+
+    return clamp(d * MaterialColor.xyz + s) * light.color.rgb * light.intensity;
 }
 
 vec3 ComputePoint(Light light, vec3 worldPos, vec3 worldNormal)
@@ -53,8 +58,13 @@ vec3 ComputeSpot(Light light, vec3 worldPos, vec3 worldNormal)
     float spot = (acos(dot(lightDir, light.direction)) - light.spot.x) / (light.spot.y - light.spot.x);
 
     d = d * mix(1, 0, clamp(spot, 0, 1));
+
+    vec3  v = normalize(ViewPos - worldPos);
+    // Light dir is from light to point, but we want the other way around, hence the V - L
+    vec3  h =  normalize(v - lightDir);
+    float s = MaterialSpecular.x * pow(max(dot(h, worldNormal), 0), MaterialSpecular.y);
     
-    return d * light.color.rgb * light.intensity * MaterialColor.xyz;
+    return clamp(d * MaterialColor.xyz + s, 0, 1) * light.color.rgb * light.intensity;
 }
 
 vec3 ComputeLight(Light light, vec3 worldPos, vec3 worldNormal)
