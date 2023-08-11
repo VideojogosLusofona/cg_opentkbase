@@ -17,32 +17,13 @@ namespace OpenTKBase
             properties = new Dictionary<string, object>();
         }
 
-        public void SetInt(string name, int v)
+        public void Set(string name, object value)
         {
-            properties[name] = v;
+            properties[name] = value;
         }
-
-        public void SetFloat(string name, float v)
+        public void Set(string name, Color4 value)
         {
-            properties[name] = v;
-        }
-
-        public void SetVector2(string name, Vector2 v)
-        {
-            properties[name] = new Vector2(v.X, v.Y);
-        }
-        public void SetVector3(string name, Vector3 v)
-        {
-            properties[name] = new Vector3(v.X, v.Y, v.Z);
-        }
-        public void SetVector4(string name, Vector4 v)
-        {
-            properties[name] = new Vector4(v.X, v.Y, v.Z, v.W);
-        }
-
-        public void SetColor(string name, Color4 color)
-        {
-            properties[name] = new Vector4(color.R, color.G, color.B, color.A);
+            properties[name] = new Vector4(value.R, value.G, value.B, value.A);
         }
 
         public T Get<T>(string name) => (T)properties[name];
@@ -50,6 +31,21 @@ namespace OpenTKBase
         public bool GetProperty(string name, out object value)
         {
             return properties.TryGetValue(name, out value);
+        }
+        public bool GetProperty<T>(string name, out T value) where T : class
+        {
+            var b = properties.TryGetValue(name, out object val);
+            if (b)
+            {
+                value = val as T;
+            }
+            else value = null;
+            return b;
+        }
+
+        public bool HasProperty(string name)
+        {
+            return properties.ContainsKey(name);
         }
     }
 }

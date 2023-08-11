@@ -6,11 +6,12 @@ namespace OpenTKBase
 {
     public static class GeometryFactory
     {
-        public static Mesh AddPlane(float sizeX, float sizeZ, uint subdivs = 1)
+        public static Mesh AddPlane(float sizeX, float sizeZ, uint subdivs = 1, bool genUV = false)
         {
             Mesh            ret = new Mesh();
             List<Vector3>   vertices = new List<Vector3>();
             List<Vector3>   normals = new List<Vector3>();
+            List<Vector2>   uvs = new List<Vector2>();
             List<uint>      indices = new List<uint>();
 
             float sx = sizeX * 0.5f;
@@ -26,7 +27,7 @@ namespace OpenTKBase
                 x = -sx;
                 for (int j = 0; j <= subdivs; j++)
                 {
-                    vertices.Add(new Vector3(x, 0.0f, z)); normals.Add(Vector3.UnitY);
+                    vertices.Add(new Vector3(x, 0.0f, z)); normals.Add(Vector3.UnitY); uvs.Add(new Vector2(j / (float)subdivs, i / (float)subdivs));
                     x += incX;
                 }
 
@@ -51,16 +52,18 @@ namespace OpenTKBase
 
             ret.SetVertices(vertices);
             ret.SetNormals(normals);
+            if (genUV) ret.SetUVs(uvs);
             ret.SetIndices(indices);
 
             return ret;
         }
 
-        public static Mesh AddCylinder(float radius, float height, int subdivs = 16)
+        public static Mesh AddCylinder(float radius, float height, int subdivs = 16, bool genUV = false)
         {
             Mesh ret = new Mesh();
             List<Vector3> vertices = new List<Vector3>();
             List<Vector3> normals = new List<Vector3>();
+            List<Vector2> uvs = new List<Vector2>();
             List<uint> indices = new List<uint>();
 
             float angle = 0.0f;
@@ -69,7 +72,7 @@ namespace OpenTKBase
             // Bottom vertex (index = 0), we use some variables to keep track of when the indices
             // for different parts start
             uint bottomVertexIndex = (uint)vertices.Count;
-            vertices.Add(Vector3.Zero); normals.Add(-Vector3.UnitY);
+            vertices.Add(Vector3.Zero); normals.Add(-Vector3.UnitY); uvs.Add(new Vector2(0.5f, 0.0f));
 
             // Bottom cap - Insert the bottom edge pointing down
             uint startBottom = (uint)vertices.Count;
@@ -77,6 +80,7 @@ namespace OpenTKBase
             {
                 vertices.Add(new Vector3(radius * MathF.Cos(angle), 0.0f, radius * MathF.Sin(angle)));
                 normals.Add(-Vector3.UnitY);
+                uvs.Add(new Vector2(i / (float)subdivs, 0.0f));
 
                 angle += angleInc;
             }
@@ -100,8 +104,8 @@ namespace OpenTKBase
                 Vector3 p0 = n * radius;
                 Vector3 p1 = p0 + Vector3.UnitY * height;
 
-                vertices.Add(p0); normals.Add(n);
-                vertices.Add(p1); normals.Add(n);
+                vertices.Add(p0); normals.Add(n); uvs.Add(new Vector2(i / (float)subdivs, 0.0f));
+                vertices.Add(p1); normals.Add(n); uvs.Add(new Vector2(i / (float)subdivs, 1.0f));
 
                 angle += angleInc;
             }
@@ -122,7 +126,7 @@ namespace OpenTKBase
 
             // Top vertex
             uint topVertexIndex = (uint)vertices.Count;
-            vertices.Add(Vector3.UnitY * height); normals.Add(Vector3.UnitY);
+            vertices.Add(Vector3.UnitY * height); normals.Add(Vector3.UnitY); uvs.Add(new Vector2(0.5f, 1.0f));
 
             // Top cap - Insert the top edge pointing up
             uint startTop = (uint)vertices.Count;
@@ -130,6 +134,7 @@ namespace OpenTKBase
             {
                 vertices.Add(new Vector3(radius * MathF.Cos(angle), height, radius * MathF.Sin(angle)));
                 normals.Add(Vector3.UnitY);
+                uvs.Add(new Vector2(i / (float)subdivs, 1.0f));
 
                 angle += angleInc;
             }
@@ -146,16 +151,18 @@ namespace OpenTKBase
 
             ret.SetVertices(vertices);
             ret.SetNormals(normals);
+            if (genUV) ret.SetUVs(uvs);
             ret.SetIndices(indices);
 
             return ret;
         }
 
-        public static Mesh AddSphere(float radius, int sides = 16, bool invertCull = false)
+        public static Mesh AddSphere(float radius, int sides = 16, bool invertCull = false, bool genUV = false)
         {
             Mesh ret = new Mesh();
             List<Vector3> vertices = new List<Vector3>();
             List<Vector3> normals = new List<Vector3>();
+            List<Vector2> uvs = new List<Vector2>();
             List<uint> indices = new List<uint>();
 
             int sidesY = sides / 2;
@@ -177,6 +184,7 @@ namespace OpenTKBase
 
                     vertices.Add(p);
                     normals.Add(n);
+                    uvs.Add(new Vector2(xz / (float)sides, y / (sidesY - 1)));
 
                     angleXZ += angleIncXZ;
                 }
@@ -213,6 +221,7 @@ namespace OpenTKBase
 
             ret.SetVertices(vertices);
             ret.SetNormals(normals);
+            if (genUV) ret.SetUVs(uvs);
             ret.SetIndices(indices);
 
             return ret;

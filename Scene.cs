@@ -12,15 +12,15 @@ namespace OpenTKBase
         public Scene()
         {
             environment = new Material(null);
-            environment.SetInt("LightCount", 0);
+            environment.Set("LightCount", 0);
             for (int i = 0; i < 8; i++)
             {
-                environment.SetInt($"Lights[{i}].type", 0);
-                environment.SetVector3($"Lights[{i}].position", Vector3.Zero);
-                environment.SetVector3($"Lights[{i}].direction", Vector3.UnitZ);
-                environment.SetColor($"Lights[{i}].color", Color4.White);
-                environment.SetFloat($"Lights[{i}].intensity", 1.0f);
-                environment.SetVector2($"Lights[{i}].spot", Vector2.Zero);
+                environment.Set($"Lights[{i}].type", 0);
+                environment.Set($"Lights[{i}].position", Vector3.Zero);
+                environment.Set($"Lights[{i}].direction", Vector3.UnitZ);
+                environment.Set($"Lights[{i}].color", Color4.White);
+                environment.Set($"Lights[{i}].intensity", 1.0f);
+                environment.Set($"Lights[{i}].spot", Vector2.Zero);
             }
         }
 

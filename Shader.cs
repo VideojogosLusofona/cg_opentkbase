@@ -30,9 +30,10 @@ namespace OpenTKBase
         private struct Uniform
         {
             public enum Type { 
-                                Material, Matrix, Environment, 
-                                ViewPos, ViewDir
-                            };
+                                Material, Matrix, Environment, Texture,
+                                ViewPos, ViewDir,
+                                HasTexture
+            };
 
             public Type                 type;
             public string               name;
@@ -254,6 +255,8 @@ namespace OpenTKBase
 
                 GL.UseProgram(handle);
 
+                int textureUnit = 0;
+
                 // Process uniforms
                 foreach (var u in uniforms)
                 {
@@ -261,6 +264,21 @@ namespace OpenTKBase
                     {
                         case Uniform.Type.Material:
                             if (material != null) SetUniformMaterial(u, material);
+                            break;
+                        case Uniform.Type.Texture:
+                            if (material != null)
+                            {
+                                material.GetProperty(u.name, out Texture texture);
+                                if (texture != null)
+                                {
+                                    texture.Set(textureUnit);
+                                    GL.Uniform1(u.slot, textureUnit++);
+                                }
+                            }
+                            break;
+                        case Uniform.Type.HasTexture:
+                            if (material == null) GL.Uniform1(u.slot, 0);
+                            else GL.Uniform1(u.slot, material.HasProperty(u.name)?(1):(0));
                             break;
                         case Uniform.Type.Matrix:
                             SetUniformMatrix(u, material);
@@ -279,6 +297,7 @@ namespace OpenTKBase
                             GL.Uniform3(u.slot, viewDir);
                             break;
                         default:
+                            Console.Write($"Unhandled type of constant {u.type}!\n");
                             break;
                     }
                 }
@@ -314,6 +333,9 @@ namespace OpenTKBase
             }
             else
             {
+                // Material is allowed not to have a texture (shader needs to account for that), so no warning is thrown if it's a variable of this type
+                if (u.dataType == ActiveUniformType.Sampler2D) return;
+
                 Console.WriteLine($"Material doesn't have property {u.name}!");
             }
         }
@@ -355,6 +377,18 @@ namespace OpenTKBase
                         dataType = type
                     });
                 }
+                else if (uniformName.StartsWith("Texture"))
+                {
+                    // This is a material property
+                    uniforms.Add(new Uniform()
+                    {
+                        type = Uniform.Type.Texture,
+                        name = uniformName.Substring(7),
+                        slot = i,
+                        dataSize = size,
+                        dataType = type
+                    });
+                }
                 else if (uniformName.StartsWith("Matrix"))
                 {
                     // This is a material property
@@ -386,6 +420,18 @@ namespace OpenTKBase
                     {
                         type = Uniform.Type.Environment,
                         name = uniformName,
+                        slot = i,
+                        dataSize = size,
+                        dataType = type
+                    });
+                }
+                else if (uniformName.StartsWith("HasTexture"))
+                {
+                    // This is a material property
+                    uniforms.Add(new Uniform()
+                    {
+                        type = Uniform.Type.HasTexture,
+                        name = uniformName.Substring(10),
                         slot = i,
                         dataSize = size,
                         dataType = type

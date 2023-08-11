@@ -9,6 +9,10 @@ uniform vec4 EnvColorMid;
 uniform vec4 EnvColorBottom;
 uniform vec3 ViewPos;
 
+uniform sampler2D   TextureBaseColor;
+
+uniform bool        HasTextureBaseColor;
+
 const int MAX_LIGHTS = 8;
 struct Light
 {
@@ -22,7 +26,7 @@ struct Light
 uniform int     LightCount;
 uniform Light   Lights[MAX_LIGHTS];
 
-vec3 ComputeDirectional(Light light, vec3 worldPos, vec3 worldNormal)
+vec3 ComputeDirectional(Light light, vec3 worldPos, vec3 worldNormal, vec4 materialColor)
 {
     float d = clamp(-dot(worldNormal, light.direction), 0, 1);
     vec3  v = normalize(ViewPos - worldPos);
@@ -30,10 +34,10 @@ vec3 ComputeDirectional(Light light, vec3 worldPos, vec3 worldNormal)
     vec3  h =  normalize(v - light.direction);
     float s = MaterialSpecular.x * pow(max(dot(h, worldNormal), 0), MaterialSpecular.y);
 
-    return clamp(d * MaterialColor.xyz + s, 0, 1) * light.color.rgb * light.intensity;
+    return clamp(d * materialColor.xyz + s, 0, 1) * light.color.rgb * light.intensity;
 }
 
-vec3 ComputePoint(Light light, vec3 worldPos, vec3 worldNormal)
+vec3 ComputePoint(Light light, vec3 worldPos, vec3 worldNormal, vec4 materialColor)
 {
     vec3  lightDir = normalize(worldPos - light.position);
     float d = clamp(-dot(worldNormal, lightDir), 0, 1);
@@ -42,10 +46,10 @@ vec3 ComputePoint(Light light, vec3 worldPos, vec3 worldNormal)
     vec3  h =  normalize(v - lightDir);
     float s = MaterialSpecular.x * pow(max(dot(h, worldNormal), 0), MaterialSpecular.y);
 
-    return clamp(d * MaterialColor.xyz + s, 0, 1) * light.color.rgb * light.intensity;
+    return clamp(d * materialColor.xyz + s, 0, 1) * light.color.rgb * light.intensity;
 }
 
-vec3 ComputeSpot(Light light, vec3 worldPos, vec3 worldNormal)
+vec3 ComputeSpot(Light light, vec3 worldPos, vec3 worldNormal, vec4 materialColor)
 {
     vec3  lightDir = normalize(worldPos - light.position);
     float d = clamp(-dot(worldNormal, lightDir), 0, 1);
@@ -58,27 +62,28 @@ vec3 ComputeSpot(Light light, vec3 worldPos, vec3 worldNormal)
     vec3  h =  normalize(v - lightDir);
     float s = MaterialSpecular.x * pow(max(dot(h, worldNormal), 0), MaterialSpecular.y);
     
-    return clamp(d * MaterialColor.xyz + s, 0, 1) * light.color.rgb * light.intensity;
+    return clamp(d * materialColor.xyz + s, 0, 1) * light.color.rgb * light.intensity;
 }
 
-vec3 ComputeLight(Light light, vec3 worldPos, vec3 worldNormal)
+vec3 ComputeLight(Light light, vec3 worldPos, vec3 worldNormal, vec4 materialColor)
 {
     if (light.type == 0)
     {
-        return ComputeDirectional(light, worldPos, worldNormal);
+        return ComputeDirectional(light, worldPos, worldNormal, materialColor);
     }
     else if (light.type == 1)
     {
-        return ComputePoint(light, worldPos, worldNormal);
+        return ComputePoint(light, worldPos, worldNormal, materialColor);
     }
     else if (light.type == 2)
     {
-        return ComputeSpot(light, worldPos, worldNormal);
+        return ComputeSpot(light, worldPos, worldNormal, materialColor);
     }
 }
 
 in vec3 fragPos;
 in vec3 fragNormal;
+in vec2 fragUV;
 
 out vec4 OutputColor;
 
@@ -86,6 +91,10 @@ void main()
 {
     vec3 worldPos = fragPos.xyz;
     vec3 worldNormal = normalize(fragNormal.xyz);
+
+    // Compute material color
+    vec4 matColor = MaterialColor;
+    if (HasTextureBaseColor) matColor *= texture(TextureBaseColor, fragUV);
 
     // Ambient component
     float d = dot(worldNormal, vec3(0,1,0));
@@ -104,7 +113,7 @@ void main()
     vec3 directLight = vec3(0,0,0);
     for (int i = 0; i < LightCount; i++)
     {
-        directLight += ComputeLight(Lights[i], worldPos, worldNormal);
+        directLight += ComputeLight(Lights[i], worldPos, worldNormal, matColor);
     }    
 
     // Add all lighting components

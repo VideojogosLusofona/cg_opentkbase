@@ -12,6 +12,7 @@ namespace OpenTKBase
         private List<Vector3>   vertices;
         private List<Vector3>   normals;
         private List<Color4>    colors;
+        private List<Vector2>   uvs;
         private List<uint>      indices;
 
         private bool            vertexDirty = true;
@@ -26,6 +27,7 @@ namespace OpenTKBase
             public Vector3  position;
             public Vector3  normal;
             public Color4   color;
+            public Vector2  uv;
 
             public static readonly int SizeInBytes = Marshal.SizeOf<VertexData>();
         }
@@ -71,6 +73,14 @@ namespace OpenTKBase
 
         public List<Color4> GetColors() => colors;
 
+        public void SetUVs(List<Vector2> uvs)
+        {
+            this.uvs = uvs;
+            vertexDirty = true;
+        }
+
+        public List<Vector2> GetUVs() => uvs;
+
         public void RenderImmediate()
         {
             if (vertices is null) return;
@@ -83,6 +93,7 @@ namespace OpenTKBase
                 {
                     if (colors != null) GL.Color4(colors[i]);
                     if (normals != null) GL.Normal3(normals[i]);
+                    if (uvs != null) GL.TexCoord2(uvs[i]);
                     GL.Vertex3(vertices[i]);
                 }
             }
@@ -92,6 +103,7 @@ namespace OpenTKBase
                 {
                     if (colors != null) GL.Color4(colors[(int)index]);
                     if (normals != null) GL.Normal3(normals[(int)index]);
+                    if (uvs != null) GL.TexCoord2(uvs[(int)index]);
                     GL.Vertex3(vertices[(int)index]);
                 }
             }
@@ -146,6 +158,7 @@ namespace OpenTKBase
                 marshallData[i].position = vertices[i];
                 if (normals != null) marshallData[i].normal = normals[i];
                 if (colors != null) marshallData[i].color = colors[i];
+                if (uvs  != null) marshallData[i].uv = uvs[i];
             }
 
             GL.BindBuffer(BufferTarget.ArrayBuffer, vbo);
@@ -201,6 +214,7 @@ namespace OpenTKBase
             if (vertices != null) SetupVAO(shader, "position", 3, VertexAttribPointerType.Float, false);
             if (normals != null) SetupVAO(shader, "normal", 3, VertexAttribPointerType.Float, false);
             if (colors != null) SetupVAO(shader, "color", 4, VertexAttribPointerType.Float, false);
+            if (uvs != null) SetupVAO(shader, "uv", 2, VertexAttribPointerType.Float, false);
 
             // Add it to our array
             vaos.Add(shader, vao);
