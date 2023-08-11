@@ -36,7 +36,7 @@ vec3 ComputeDirectional(Light light, vec3 worldPos, vec3 worldNormal)
     vec3  h =  normalize(v - light.direction);
     float s = MaterialSpecular.x * pow(max(dot(h, worldNormal), 0), MaterialSpecular.y);
 
-    return clamp(d * MaterialColor.xyz + s) * light.color.rgb * light.intensity;
+    return clamp(d * MaterialColor.xyz + s, 0, 1) * light.color.rgb * light.intensity;
 }
 
 vec3 ComputePoint(Light light, vec3 worldPos, vec3 worldNormal)
