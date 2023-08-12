@@ -23,7 +23,8 @@ namespace OpenTKBase
                 envMaterial.Set($"Lights[{i}].direction", light.transform.forward);
                 envMaterial.Set($"Lights[{i}].color", light.lightColor);
                 envMaterial.Set($"Lights[{i}].intensity", light.intensity);
-                envMaterial.Set($"Lights[{i}].spot", light.cone * 0.5f); 
+                envMaterial.Set($"Lights[{i}].spot", light.cone * 0.5f);
+                envMaterial.Set($"Lights[{i}].range", light.range);
             }
 
             foreach (var camera in allCameras)

@@ -17,6 +17,8 @@ Engine code developed by [Diogo de Andrade][DAndrade] and [Nuno Fachada][NFachad
 Code uses:
 
 * [OpenTK], licensed under the [MIT] license
+* Grass texture by Charlotte Baglioni/Dario Barresi, under the [CC0] license
+* Cubemap by [Emil Persson], under the [CC-BY3.0] license
 
 All the text and documentation (i.e., non-code files) are made available under
 the [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
@@ -31,3 +33,4 @@ License][CC BY-NC-SA 4.0].
 [MIT]:https://opensource.org/license/mit/
 [DAndrade]:https://github.com/DiogoDeAndrade
 [NFachada]:https://github.com/fakenmc
+[Emil Persson]:http://www.humus.name/

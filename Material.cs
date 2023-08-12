@@ -21,6 +21,16 @@ namespace OpenTKBase
         {
             properties[name] = value;
         }
+        public void Set(string name, double value)
+        {
+            properties[name] = (float)value;
+        }
+
+        public void Set(string name, int value)
+        {
+            properties[name] = (int)value;
+        }
+
         public void Set(string name, Color4 value)
         {
             properties[name] = new Vector4(value.R, value.G, value.B, value.A);

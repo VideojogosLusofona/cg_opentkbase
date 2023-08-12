@@ -30,7 +30,8 @@ namespace OpenTKBase
         private struct Uniform
         {
             public enum Type { 
-                                Material, Matrix, Environment, Texture,
+                                Material, Environment, Texture, EnvTexture, 
+                                Matrix, 
                                 ViewPos, ViewDir,
                                 HasTexture
             };
@@ -276,6 +277,17 @@ namespace OpenTKBase
                                 }
                             }
                             break;
+                        case Uniform.Type.EnvTexture:
+                            if (OpenTKApp.APP.mainScene.environment != null)
+                            {
+                                OpenTKApp.APP.mainScene.environment.GetProperty(u.name, out Texture texture);
+                                if (texture != null)
+                                {
+                                    texture.Set(textureUnit);
+                                    GL.Uniform1(u.slot, textureUnit++);
+                                }
+                            }
+                            break;
                         case Uniform.Type.HasTexture:
                             if (material == null) GL.Uniform1(u.slot, 0);
                             else GL.Uniform1(u.slot, material.HasProperty(u.name)?(1):(0));
@@ -384,6 +396,18 @@ namespace OpenTKBase
                     {
                         type = Uniform.Type.Texture,
                         name = uniformName.Substring(7),
+                        slot = i,
+                        dataSize = size,
+                        dataType = type
+                    });
+                }
+                else if (uniformName.StartsWith("EnvTexture"))
+                {
+                    // This is a material property
+                    uniforms.Add(new Uniform()
+                    {
+                        type = Uniform.Type.EnvTexture,
+                        name = uniformName.Substring(10),
                         slot = i,
                         dataSize = size,
                         dataType = type

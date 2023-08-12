@@ -12,6 +12,8 @@ namespace OpenTKBase
         public Scene()
         {
             environment = new Material(null);
+            environment.Set("FogColor", Color4.Black);
+            environment.Set("FogDensity", 0);
             environment.Set("LightCount", 0);
             for (int i = 0; i < 8; i++)
             {
@@ -21,6 +23,7 @@ namespace OpenTKBase
                 environment.Set($"Lights[{i}].color", Color4.White);
                 environment.Set($"Lights[{i}].intensity", 1.0f);
                 environment.Set($"Lights[{i}].spot", Vector2.Zero);
+                environment.Set($"Lights[{i}].range", 5.0f);
             }
         }
 

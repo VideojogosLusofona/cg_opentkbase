@@ -1,15 +1,18 @@
 ﻿#version 330 core
 
-uniform vec4 MaterialColor = vec4(1,1,0,1);
-uniform vec2 MaterialSpecular = vec2(0,1);
-uniform vec4 MaterialColorEmissive = vec4(0,0,0,1);
-uniform vec4 EnvColor;
-uniform vec4 EnvColorTop;
-uniform vec4 EnvColorMid;
-uniform vec4 EnvColorBottom;
-uniform vec3 ViewPos;
+uniform vec4    MaterialColor = vec4(1,1,0,1);
+uniform vec2    MaterialSpecular = vec2(0,1);
+uniform vec4    MaterialColorEmissive = vec4(0,0,0,1);
+uniform vec4    EnvColor;
+uniform vec4    EnvColorTop;
+uniform vec4    EnvColorMid;
+uniform vec4    EnvColorBottom;
+uniform float   EnvFogDensity;
+uniform vec4    EnvFogColor;
+uniform vec3    ViewPos;
 
 uniform sampler2D   TextureBaseColor;
+uniform samplerCube EnvTextureCubeMap;
 
 uniform bool        HasTextureBaseColor;
 
@@ -22,9 +25,22 @@ struct Light
     vec4    color;
     float   intensity;
     vec2    spot;
+    float   range;
 };
 uniform int     LightCount;
 uniform Light   Lights[MAX_LIGHTS];
+
+float saturate(float v)
+{
+    return clamp(v, 0, 1);
+}
+
+float ComputeAttenuation(Light light, vec3 worldPos)
+{
+    float d = length(worldPos - light.position) / light.range;
+
+    return saturate(saturate(5 * (1 - d)) / (1 + 25 * d * d));
+}
 
 vec3 ComputeDirectional(Light light, vec3 worldPos, vec3 worldNormal, vec4 materialColor)
 {
@@ -46,7 +62,7 @@ vec3 ComputePoint(Light light, vec3 worldPos, vec3 worldNormal, vec4 materialCol
     vec3  h =  normalize(v - lightDir);
     float s = MaterialSpecular.x * pow(max(dot(h, worldNormal), 0), MaterialSpecular.y);
 
-    return clamp(d * materialColor.xyz + s, 0, 1) * light.color.rgb * light.intensity;
+    return clamp(d * materialColor.xyz + s, 0, 1) * light.color.rgb * light.intensity * ComputeAttenuation(light, worldPos);
 }
 
 vec3 ComputeSpot(Light light, vec3 worldPos, vec3 worldNormal, vec4 materialColor)
@@ -62,7 +78,7 @@ vec3 ComputeSpot(Light light, vec3 worldPos, vec3 worldNormal, vec4 materialColo
     vec3  h =  normalize(v - lightDir);
     float s = MaterialSpecular.x * pow(max(dot(h, worldNormal), 0), MaterialSpecular.y);
     
-    return clamp(d * materialColor.xyz + s, 0, 1) * light.color.rgb * light.intensity;
+    return clamp(d * materialColor.xyz + s, 0, 1) * light.color.rgb * light.intensity * ComputeAttenuation(light, worldPos);
 }
 
 vec3 ComputeLight(Light light, vec3 worldPos, vec3 worldNormal, vec4 materialColor)
@@ -96,15 +112,8 @@ void main()
     vec4 matColor = MaterialColor;
     if (HasTextureBaseColor) matColor *= texture(TextureBaseColor, fragUV);
 
-    // Ambient component
-    float d = dot(worldNormal, vec3(0,1,0));
-    vec4  skyColor;
-    if (d < 0)
-        skyColor = mix(EnvColorMid, EnvColorBottom, clamp(-d, 0, 1));
-    else
-        skyColor = mix(EnvColorMid, EnvColorTop, clamp(d, 0, 1));
-
-    vec3 envLighting = EnvColor.xyz * MaterialColor.xyz * skyColor.xyz;
+    // Ambient component - get data from 4th mipmap of the cubemap (effective hardware blur)
+    vec3 envLighting = EnvColor.xyz * MaterialColor.xyz * textureLod(EnvTextureCubeMap, worldNormal, 8).xyz;
 
     // Emissive component
     vec3 emissiveLighting = MaterialColorEmissive.rgb;
@@ -118,4 +127,9 @@ void main()
 
     // Add all lighting components
     OutputColor = vec4(envLighting + emissiveLighting + directLight, 1);
+
+    // Fog
+    float distToCamera = length(worldPos - ViewPos);
+    float fogFactor = 1 / pow(2, EnvFogDensity * distToCamera * distToCamera);
+    OutputColor = mix(EnvFogColor, OutputColor, fogFactor);
 }

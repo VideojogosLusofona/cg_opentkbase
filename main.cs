@@ -90,12 +90,18 @@ namespace SDLBase
 
         static void SetupEnvironment()
         {
+            var cubeMap = new Texture();
+            cubeMap.LoadCube("Textures/cube_*.jpg");
+
             var env = OpenTKApp.APP.mainScene.environment;
 
             env.Set("Color", new Color4(0.2f, 0.2f, 0.2f, 1.0f));
             env.Set("ColorTop", new Color4(0.0f, 1.0f, 1.0f, 1.0f));
             env.Set("ColorMid", new Color4(1.0f, 1.0f, 1.0f, 1.0f));
             env.Set("ColorBottom", new Color4(0.0f, 0.25f, 0.0f, 1.0f));
+            env.Set("FogDensity", 0.0025f);
+            env.Set("FogColor", Color.DarkCyan);
+            env.Set("CubeMap", cubeMap);
         }
 
         static GameObject SetupLights()
@@ -105,9 +111,10 @@ namespace SDLBase
             go.transform.position = new Vector3(0.0f, 3.0f, 0.0f);
             go.transform.rotation = Quaternion.FromAxisAngle(Vector3.UnitX, -MathF.PI * 0.16f);
             Light light = go.AddComponent<Light>();
-            light.type = Light.Type.Directional;
+            light.type = Light.Type.Point;
             light.lightColor = Color.White;
             light.intensity = 2.0f;
+            light.range = 100;
             light.cone = new Vector2(0.0f, MathF.PI / 2.0f);
 
             return go;
@@ -136,7 +143,7 @@ namespace SDLBase
         {
             Mesh mesh = GeometryFactory.AddSphere(radius, 64, true);
 
-            Material material = new Material(Shader.Find("Shaders/skysphere"));
+            Material material = new Material(Shader.Find("Shaders/skysphere_envmap"));
 
             GameObject go = new GameObject();
             go.transform.position = new Vector3(0, 0, 0);
