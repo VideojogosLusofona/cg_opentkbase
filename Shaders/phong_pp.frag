@@ -12,9 +12,11 @@ uniform vec4    EnvFogColor;
 uniform vec3    ViewPos;
 
 uniform sampler2D   TextureBaseColor;
+uniform sampler2D   TextureNormalMap;
 uniform samplerCube EnvTextureCubeMap;
 
 uniform bool        HasTextureBaseColor;
+uniform bool        HasTextureNormalMap;
 
 const int MAX_LIGHTS = 8;
 struct Light
@@ -99,6 +101,7 @@ vec3 ComputeLight(Light light, vec3 worldPos, vec3 worldNormal, vec4 materialCol
 
 in vec3 fragPos;
 in vec3 fragNormal;
+in vec4 fragTangent;
 in vec2 fragUV;
 
 out vec4 OutputColor;
@@ -106,7 +109,23 @@ out vec4 OutputColor;
 void main()
 {
     vec3 worldPos = fragPos.xyz;
-    vec3 worldNormal = normalize(fragNormal.xyz);
+    vec3 worldNormal;
+    if (HasTextureNormalMap)
+    {
+        vec3 n = normalize(fragNormal);
+        vec3 t = normalize(fragTangent.xyz);
+
+        // Create tangent space
+        vec3 binormal = cross(n, t) * fragTangent.w;
+        mat3 TBN = mat3(t, binormal, n);
+        vec3 normalMap = texture(TextureNormalMap, fragUV).xyz * 2 - 1;
+
+        worldNormal = TBN * normalMap;
+    }
+    else
+    {
+        worldNormal = normalize(fragNormal.xyz);
+    }
 
     // Compute material color
     vec4 matColor = MaterialColor;

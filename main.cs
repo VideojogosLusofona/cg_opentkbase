@@ -16,7 +16,6 @@ namespace SDLBase
             app.LockMouse(true);
 
             ExecuteApp_Forest(app);
-            //ExecuteApp_NoTransform(app);
 
             app.Shutdown();
         }
@@ -24,15 +23,19 @@ namespace SDLBase
         static GameObject CreateGround(float size)
         {
             Mesh mesh = GeometryFactory.AddPlane(size, size, 128, true);
+            mesh.ComputeNormalsAndTangentSpace();
 
             Texture grassTexture = new Texture(OpenTK.Graphics.OpenGL.TextureWrapMode.Repeat, OpenTK.Graphics.OpenGL.TextureMinFilter.Linear, true);
             grassTexture.Load("Textures/grass_basecolor.png");
+            Texture grassNormal = new Texture(OpenTK.Graphics.OpenGL.TextureWrapMode.Repeat, OpenTK.Graphics.OpenGL.TextureMinFilter.Linear, true);
+            grassNormal.Load("Textures/grass_normal.png");
 
             Material material = new Material(Shader.Find("Shaders/phong_pp"));
-            material.Set("Color", Color4.DarkGreen);
+            material.Set("Color", Color4.White);
             material.Set("ColorEmissive", Color4.Black);
             material.Set("Specular", new Vector2(2.0f, 128.0f));
             material.Set("BaseColor", grassTexture);
+            material.Set("NormalMap", grassNormal);
 
             GameObject go = new GameObject();
             go.transform.position = new Vector3(0, 0, 0);
@@ -99,7 +102,7 @@ namespace SDLBase
             env.Set("ColorTop", new Color4(0.0f, 1.0f, 1.0f, 1.0f));
             env.Set("ColorMid", new Color4(1.0f, 1.0f, 1.0f, 1.0f));
             env.Set("ColorBottom", new Color4(0.0f, 0.25f, 0.0f, 1.0f));
-            env.Set("FogDensity", 0.0025f);
+            env.Set("FogDensity", 0.000001f);
             env.Set("FogColor", Color.DarkCyan);
             env.Set("CubeMap", cubeMap);
         }
