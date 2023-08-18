@@ -21,6 +21,7 @@ namespace OpenTKBase
         public void SetShadow(bool enable, int resolution)
         {
             shadowmapEnable = enable;
+            shadowmapResolution = resolution;
             if (enable)
             {
                 shadowmap = new Texture(OpenTK.Graphics.OpenGL.TextureWrapMode.ClampToBorder, OpenTK.Graphics.OpenGL.TextureMinFilter.Nearest, false);

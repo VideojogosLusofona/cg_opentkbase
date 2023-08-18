@@ -134,11 +134,14 @@ namespace OpenTKBase
             if (height != 0) this.height = height;
 
             // Setup wrap mode of depth texture to be clamp to border...
-            depthTexture = new Texture(TextureWrapMode.ClampToBorder, filterMode, enableMips);
+            depthTexture = new Texture(TextureWrapMode.ClampToBorder, TextureMinFilter.Linear, false);
             depthTexture.Create(TextureTarget.Texture2D, PixelInternalFormat.DepthComponent, PixelFormat.DepthComponent, PixelType.Float, this.width, this.height, null);
 
             // Sampling outside should return 1.0f
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureBorderColor, new float[4] { 1.0f, 1.0f, 1.0f, 1.0f });
+            // Need to setup the comparison operator as well
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureCompareMode, (int)All.CompareRefToTexture);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureCompareFunc, (int)All.Lequal);
 
             return true;
         }

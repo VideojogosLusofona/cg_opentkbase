@@ -29,8 +29,7 @@ struct Light
     vec4            spot;
     float           range;
     bool            shadowmapEnable;
-    //sampler2DShadow shadowmap;
-    sampler2D       shadowmap;
+    sampler2DShadow shadowmap;
     mat4            shadowMatrix;
 };
 uniform int     LightCount;
@@ -92,9 +91,7 @@ vec3 ComputeSpot(Light light, vec3 worldPos, vec3 worldNormal, vec4 materialColo
     shadowProj = shadowProj * 0.5 + 0.5;
     // Fetch depth while comparing
     float bias = 0.0;
-    float sampleDepth = texture(light.shadowmap, shadowProj.xy).x;
-    float currentDepth = shadowProj.z + bias;
-    float shadowFactor = (currentDepth > sampleDepth) ? (0.0) : (1.0);
+    float shadowFactor = texture(light.shadowmap, shadowProj.xyz);
    
     return shadowFactor * clamp(d * materialColor.xyz + s, 0, 1) * light.color.rgb * light.intensity * ComputeAttenuation(light, worldPos);
 }

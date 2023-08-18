@@ -398,6 +398,7 @@ namespace OpenTKBase
             for (int i = 0; i < numUniforms; i++)
             {
                 GL.GetActiveUniform(handle, i, 256, out int length, out int size, out ActiveUniformType type, out string uniformName);
+                int location = GL.GetUniformLocation(handle, uniformName);
 
                 if (uniformName.StartsWith("Material"))
                 {
@@ -406,7 +407,7 @@ namespace OpenTKBase
                     {
                         type = Uniform.Type.Material,
                         name = uniformName.Substring(8),
-                        slot = i,
+                        slot = location,
                         dataSize = size,
                         dataType = type
                     });
@@ -418,7 +419,7 @@ namespace OpenTKBase
                     {
                         type = Uniform.Type.Texture,
                         name = uniformName.Substring(7),
-                        slot = i,
+                        slot = location,
                         dataSize = size,
                         dataType = type
                     });
@@ -430,7 +431,7 @@ namespace OpenTKBase
                     {
                         type = Uniform.Type.EnvTexture,
                         name = uniformName.Substring(10),
-                        slot = i,
+                        slot = location,
                         dataSize = size,
                         dataType = type
                     });
@@ -443,7 +444,7 @@ namespace OpenTKBase
                         type = Uniform.Type.Matrix,
                         name = uniformName.Substring(6),
                         matrixType = StringToMatrixType(uniformName.Substring(6)),
-                        slot = i,
+                        slot = location,
                         dataSize = size,
                         dataType = type
                     });
@@ -455,7 +456,7 @@ namespace OpenTKBase
                     {
                         type = Uniform.Type.Environment,
                         name = uniformName.Substring(3),
-                        slot = i,
+                        slot = location,
                         dataSize = size,
                         dataType = type
                     });
@@ -466,7 +467,7 @@ namespace OpenTKBase
                     {
                         type = Uniform.Type.Environment,
                         name = uniformName,
-                        slot = i,
+                        slot = location,
                         dataSize = size,
                         dataType = type
                     });
@@ -478,13 +479,13 @@ namespace OpenTKBase
                     {
                         type = Uniform.Type.HasTexture,
                         name = uniformName.Substring(10),
-                        slot = i,
+                        slot = location,
                         dataSize = size,
                         dataType = type
                     });
                 }
-                else if (uniformName == "ViewPos") uniforms.Add(new Uniform() { type = Uniform.Type.ViewPos, name = uniformName, slot = i, dataSize = size, dataType = type });
-                else if (uniformName == "ViewDir") uniforms.Add(new Uniform() { type = Uniform.Type.ViewDir, name = uniformName, slot = i, dataSize = size, dataType = type });
+                else if (uniformName == "ViewPos") uniforms.Add(new Uniform() { type = Uniform.Type.ViewPos, name = uniformName, slot = location, dataSize = size, dataType = type });
+                else if (uniformName == "ViewDir") uniforms.Add(new Uniform() { type = Uniform.Type.ViewDir, name = uniformName, slot = location, dataSize = size, dataType = type });
                 else
                 {
                     Console.WriteLine($"Can't parse uniform {uniformName} in shader {name}!");
