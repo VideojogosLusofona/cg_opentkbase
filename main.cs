@@ -114,7 +114,7 @@ namespace SDLBase
             go.transform.position = new Vector3(0.0f, 3.0f, 0.0f);
             go.transform.rotation = Quaternion.FromAxisAngle(Vector3.UnitX, -MathF.PI * 0.16f);
             Light light = go.AddComponent<Light>();
-            light.type = Light.Type.Point;
+            light.type = Light.Type.Spot;
             light.lightColor = Color.White;
             light.intensity = 2.0f;
             light.range = 100;

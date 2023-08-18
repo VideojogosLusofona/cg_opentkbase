@@ -23,7 +23,7 @@ namespace OpenTKBase
                 envMaterial.Set($"Lights[{i}].direction", light.transform.forward);
                 envMaterial.Set($"Lights[{i}].color", light.lightColor);
                 envMaterial.Set($"Lights[{i}].intensity", light.intensity);
-                envMaterial.Set($"Lights[{i}].spot", light.cone * 0.5f);
+                envMaterial.Set($"Lights[{i}].spot", light.cone.X * 0.5f, light.cone.Y * 0.5f, MathF.Cos(light.cone.X * 0.5f), MathF.Cos(light.cone.Y * 0.5f));
                 envMaterial.Set($"Lights[{i}].range", light.range);
             }
 

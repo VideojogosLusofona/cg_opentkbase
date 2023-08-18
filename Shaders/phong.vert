@@ -21,7 +21,7 @@ struct Light
     vec3    direction;
     vec4    color;
     float   intensity;
-    vec2    spot;
+    vec4    spot;
 };
 uniform int     LightCount;
 uniform Light   Lights[MAX_LIGHTS];

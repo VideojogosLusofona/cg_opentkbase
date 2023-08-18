@@ -22,7 +22,7 @@ namespace OpenTKBase
                 environment.Set($"Lights[{i}].direction", Vector3.UnitZ);
                 environment.Set($"Lights[{i}].color", Color4.White);
                 environment.Set($"Lights[{i}].intensity", 1.0f);
-                environment.Set($"Lights[{i}].spot", Vector2.Zero);
+                environment.Set($"Lights[{i}].spot", Vector4.Zero);
                 environment.Set($"Lights[{i}].range", 5.0f);
             }
         }

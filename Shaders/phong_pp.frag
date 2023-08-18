@@ -26,7 +26,7 @@ struct Light
     vec3    direction;
     vec4    color;
     float   intensity;
-    vec2    spot;
+    vec4    spot;
     float   range;
 };
 uniform int     LightCount;
@@ -70,15 +70,15 @@ vec3 ComputePoint(Light light, vec3 worldPos, vec3 worldNormal, vec4 materialCol
 vec3 ComputeSpot(Light light, vec3 worldPos, vec3 worldNormal, vec4 materialColor)
 {
     vec3  lightDir = normalize(worldPos - light.position);
-    float d = clamp(-dot(worldNormal, lightDir), 0, 1);
-    float spot = (acos(dot(lightDir, light.direction)) - light.spot.x) / (light.spot.y - light.spot.x);
+    float cosAngle = dot(lightDir, light.direction);
+    float spot = clamp((cosAngle - light.spot.w) / (light.spot.z - light.spot.w), 0, 1);
 
-    d = d * mix(1, 0, clamp(spot, 0, 1));
+    float d = spot * clamp(-dot(worldNormal, lightDir), 0, 1);
 
     vec3  v = normalize(ViewPos - worldPos);
     // Light dir is from light to point, but we want the other way around, hence the V - L
     vec3  h =  normalize(v - lightDir);
-    float s = MaterialSpecular.x * pow(max(dot(h, worldNormal), 0), MaterialSpecular.y);
+    float s = spot * max(0, spot * MaterialSpecular.x * pow(max(dot(h, worldNormal), 0), MaterialSpecular.y));
     
     return clamp(d * materialColor.xyz + s, 0, 1) * light.color.rgb * light.intensity * ComputeAttenuation(light, worldPos);
 }

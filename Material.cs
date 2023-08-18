@@ -35,6 +35,10 @@ namespace OpenTKBase
         {
             properties[name] = new Vector4(value.R, value.G, value.B, value.A);
         }
+        public void Set(string name, float x, float y, float z, float w)
+        {
+            properties[name] = new Vector4(x, y, z, w);
+        }
 
         public T Get<T>(string name) => (T)properties[name];
 
