@@ -248,6 +248,8 @@ namespace OpenTKBase
             return GL.GetAttribLocation(handle, attributeName);
         }
 
+        static int textureUnit = 0;
+
         public void Set(Material material)
         {
             if (handle != -1)
@@ -256,7 +258,7 @@ namespace OpenTKBase
 
                 GL.UseProgram(handle);
 
-                int textureUnit = 0;
+                textureUnit = 0;
 
                 // Process uniforms
                 foreach (var u in uniforms)
@@ -323,6 +325,9 @@ namespace OpenTKBase
             {
                 switch (u.dataType)
                 {
+                    case ActiveUniformType.Bool:
+                        GL.Uniform1(u.slot, ((bool)value)?(1):(0));
+                        break;
                     case ActiveUniformType.Int:
                         GL.Uniform1(u.slot, (int)value);
                         break;
@@ -337,6 +342,23 @@ namespace OpenTKBase
                         break;
                     case ActiveUniformType.FloatVec4:
                         GL.Uniform4(u.slot, (Vector4)value);
+                        break;
+                    case ActiveUniformType.FloatMat4:
+                        var matrix4 = (Matrix4)value;
+                        GL.UniformMatrix4(u.slot, false, ref matrix4);
+                        break;
+                    case ActiveUniformType.Sampler2D:
+                    case ActiveUniformType.Sampler2DShadow:
+                        var texture = (Texture)value;
+                        if (texture != null)
+                        {
+                            texture.Set(textureUnit);
+                            GL.Uniform1(u.slot, textureUnit++);
+                        }
+                        else
+                        {
+                            GL.Uniform1(u.slot, 0);
+                        }
                         break;
                     default:
                         Console.WriteLine($"Unsupported uniform data type {u.dataType} (type={u.type}, name={u.name})!");

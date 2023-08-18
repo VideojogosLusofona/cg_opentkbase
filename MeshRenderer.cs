@@ -23,14 +23,14 @@ namespace OpenTKBase
             }
         }
 
-        public override void Render(Camera camera)
+        public override void Render(Camera camera, Material material)
         {
-            var material = this.material;
+            var activeMaterial = (material == null) ? (this.material) : (material);
 
             Shader.SetMatrix(Shader.MatrixType.World, transform.localToWorldMatrix);
 
             var mf = GetComponent<MeshFilter>();
-            mf.mesh.Render(material);
+            mf.mesh.Render(activeMaterial);
         }
     }
 }

@@ -116,9 +116,10 @@ namespace SDLBase
             Light light = go.AddComponent<Light>();
             light.type = Light.Type.Spot;
             light.lightColor = Color.White;
-            light.intensity = 2.0f;
-            light.range = 100;
+            light.intensity = 5.0f;
+            light.range = 200;
             light.cone = new Vector2(0.0f, MathF.PI / 2.0f);
+            light.SetShadow(true, 2048);
 
             return go;
         }
@@ -167,11 +168,11 @@ namespace SDLBase
             var ret = CreateGround(forestSize);
 
             // Create a sphere in the middle of the forest
-            var (reflectSphere, reflectMaterial) = CreateSphere();
+            /*var (reflectSphere, reflectMaterial) = CreateSphere();
             var (glowSphere, glowMaterial) = CreateSphere();
             glowSphere.transform.position = light.transform.position;
             glowMaterial.Set("Color", Color4.Black);
-            glowMaterial.Set("ColorEmissive", Color4.Yellow);
+            glowMaterial.Set("ColorEmissive", Color4.Yellow);*/
 
             // Create trees
             Random rnd = new Random(1);

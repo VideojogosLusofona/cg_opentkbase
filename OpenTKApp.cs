@@ -12,8 +12,8 @@ namespace OpenTKBase
 {
     public class OpenTKApp
     {
-        private int         resX = 512;
-        private int         resY = 512;
+        public  int         resX { private set; get; }
+        public  int         resY { private set; get; }
         private string      title = "Test App";
         private bool        debug = false;
         private Action      runAction = null;
@@ -63,8 +63,6 @@ namespace OpenTKBase
             window.UpdateFrequency = 60.0f;
             window.UpdateFrame += OnUpdateFrame;
             window.RenderFrame += OnRender;
-
-            GL.Viewport(0, 0, resX, resY);
 
             // Activate depth testing
             GL.Enable(EnableCap.DepthTest);

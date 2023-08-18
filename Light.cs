@@ -12,5 +12,38 @@ namespace OpenTKBase
         public float    intensity = 1.0f;
         public Vector2  cone = new Vector2(MathF.PI * 0.25f, MathF.PI * 0.5f);
         public float    range = 5.0f;
+
+        private bool    shadowmapEnable = false;
+        private Texture shadowmap;
+        private int     shadowmapResolution = 2048;
+
+        
+        public void SetShadow(bool enable, int resolution)
+        {
+            shadowmapEnable = enable;
+            if (enable)
+            {
+                shadowmap = new Texture(OpenTK.Graphics.OpenGL.TextureWrapMode.ClampToBorder, OpenTK.Graphics.OpenGL.TextureMinFilter.Nearest, false);
+                shadowmap.CreateDepth(shadowmapResolution, shadowmapResolution);
+                shadowmap.CreateRendertarget();
+            }
+            else
+            {
+                shadowmap = null;
+            }
+        }
+
+        public bool HasShadowmap() => shadowmapEnable;
+        public Texture GetShadowmap() => shadowmap;
+
+        public Matrix4 GetSpotlightProjection()
+        {
+            return Matrix4.CreatePerspectiveFieldOfView(cone.Y, 1.0f, 0.01f, range);
+        }
+
+        public Matrix4 GetShadowMatrix()
+        {
+            return transform.worldToLocalMatrix * GetSpotlightProjection();
+        }
     }
 }

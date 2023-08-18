@@ -24,6 +24,9 @@ namespace OpenTKBase
                 environment.Set($"Lights[{i}].intensity", 1.0f);
                 environment.Set($"Lights[{i}].spot", Vector4.Zero);
                 environment.Set($"Lights[{i}].range", 5.0f);
+                environment.Set($"Lights[{i}].shadowmapEnable", false);
+                environment.Set($"Lights[{i}].shadowmap", (Texture)null);
+                environment.Set($"Lights[{i}].shadowMatrix", Matrix4.Identity);
             }
         }
 

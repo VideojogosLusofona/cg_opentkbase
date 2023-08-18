@@ -21,13 +21,17 @@ uniform bool        HasTextureNormalMap;
 const int MAX_LIGHTS = 8;
 struct Light
 {
-    int     type;
-    vec3    position;
-    vec3    direction;
-    vec4    color;
-    float   intensity;
-    vec4    spot;
-    float   range;
+    int             type;
+    vec3            position;
+    vec3            direction;
+    vec4            color;
+    float           intensity;
+    vec4            spot;
+    float           range;
+    bool            shadowmapEnable;
+    //sampler2DShadow shadowmap;
+    sampler2D       shadowmap;
+    mat4            shadowMatrix;
 };
 uniform int     LightCount;
 uniform Light   Lights[MAX_LIGHTS];
@@ -79,8 +83,20 @@ vec3 ComputeSpot(Light light, vec3 worldPos, vec3 worldNormal, vec4 materialColo
     // Light dir is from light to point, but we want the other way around, hence the V - L
     vec3  h =  normalize(v - lightDir);
     float s = spot * max(0, spot * MaterialSpecular.x * pow(max(dot(h, worldNormal), 0), MaterialSpecular.y));
-    
-    return clamp(d * materialColor.xyz + s, 0, 1) * light.color.rgb * light.intensity * ComputeAttenuation(light, worldPos);
+
+    // Compute shadow
+    vec4 shadowProj = light.shadowMatrix * vec4(worldPos, 1);
+    // Perpective divide
+    shadowProj = shadowProj / shadowProj.w;
+    // Convert to UV (NDC range [-1,1] to tex coord range [0, 1])
+    shadowProj = shadowProj * 0.5 + 0.5;
+    // Fetch depth while comparing
+    float bias = 0.0;
+    float sampleDepth = texture(light.shadowmap, shadowProj.xy).x;
+    float currentDepth = shadowProj.z + bias;
+    float shadowFactor = (currentDepth > sampleDepth) ? (0.0) : (1.0);
+   
+    return shadowFactor * clamp(d * materialColor.xyz + s, 0, 1) * light.color.rgb * light.intensity * ComputeAttenuation(light, worldPos);
 }
 
 vec3 ComputeLight(Light light, vec3 worldPos, vec3 worldNormal, vec4 materialColor)

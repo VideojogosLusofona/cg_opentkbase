@@ -38,11 +38,18 @@ namespace OpenTKBase
         {
             if (vbo != -1)
             {
+                GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
                 GL.DeleteBuffer(vbo);
                 vbo = -1;
             }
+            if (ibo != -1)
+            {
+                GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
+                GL.DeleteBuffer(ibo);
+                ibo = -1;
+            }
         }
-        
+
         public void SetIndices(List<uint> indices)
         {
             this.indices = indices;
@@ -240,6 +247,8 @@ namespace OpenTKBase
             {
                 if (indexDirty) UpdateIndex();
 
+                GL.BindBuffer(BufferTarget.ElementArrayBuffer, ibo);
+
                 GL.DrawElements(primitive, indices.Count, DrawElementsType.UnsignedInt, 0);
             }
         }
@@ -251,6 +260,7 @@ namespace OpenTKBase
                 // Guarantee that this buffer is not in use
                 GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
                 GL.DeleteBuffer(vbo);
+                vbo = -1;
             }
 
             vbo = GL.GenBuffer();
@@ -278,8 +288,9 @@ namespace OpenTKBase
             if (ibo != -1)
             {
                 // Guarantee that this buffer is not in use
-                GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
+                GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
                 GL.DeleteBuffer(ibo);
+                ibo = -1;
             }
 
             // Create IBO

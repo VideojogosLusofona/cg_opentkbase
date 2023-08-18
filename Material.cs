@@ -30,7 +30,7 @@ namespace OpenTKBase
         {
             properties[name] = (int)value;
         }
-
+        
         public void Set(string name, Color4 value)
         {
             properties[name] = new Vector4(value.R, value.G, value.B, value.A);
