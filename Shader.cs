@@ -29,7 +29,7 @@ namespace OpenTKBase
 
         private struct Uniform
         {
-            public enum Type { Material, Matrix };
+            public enum Type { Material, Environment, Matrix };
 
             public Type                 type;
             public string               name;
@@ -257,6 +257,9 @@ namespace OpenTKBase
                         case Uniform.Type.Material:
                             if (material != null) SetUniformMaterial(u, material);
                             break;
+                        case Uniform.Type.Environment:
+                            SetUniformMaterial(u, OpenTKApp.APP.mainScene.environment);
+                            break;
                         case Uniform.Type.Matrix:
                             if (material != null) SetUniformMatrix(u, material);
                             break;
@@ -318,6 +321,18 @@ namespace OpenTKBase
                     {
                         type = Uniform.Type.Material,
                         name = uniformName.Substring(8),
+                        slot = i,
+                        dataSize = size,
+                        dataType = type
+                    });
+                }
+                else if (uniformName.StartsWith("Env"))
+                {
+                    // This is a material property
+                    uniforms.Add(new Uniform()
+                    {
+                        type = Uniform.Type.Environment,
+                        name = uniformName.Substring(3),
                         slot = i,
                         dataSize = size,
                         dataType = type

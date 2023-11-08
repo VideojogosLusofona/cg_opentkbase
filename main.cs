@@ -26,7 +26,7 @@ namespace SDLBase
         {
             Mesh mesh = GeometryFactory.AddPlane(size, size);
 
-            Material material = new Material(Shader.Find("Shaders/phong"));
+            Material material = new Material(Shader.Find("Shaders/phong_vs"));
             material.SetColor("Color", Color4.DarkGreen);
 
             GameObject go = new GameObject();
@@ -52,7 +52,7 @@ namespace SDLBase
 
             Mesh mesh = GeometryFactory.AddCylinder(widthTrunk, heightTrunk, 8);
 
-            Material material = new Material(Shader.Find("Shaders/phong"));
+            Material material = new Material(Shader.Find("Shaders/phong_vs"));
             material.SetColor("Color", new Color4(rnd.Range(0.6f, 0.9f), rnd.Range(0.4f, 0.6f), rnd.Range(0.15f, 0.35f), 1.0f));
 
             GameObject mainObject = new GameObject();
@@ -65,7 +65,7 @@ namespace SDLBase
             // Leaves
             mesh = GeometryFactory.AddCylinder(rnd.Range(widthTrunk * 1.5f, widthTrunk * 4.0f), rnd.Range(heightTrunk * 2.0f, heightTrunk * 8.0f));
 
-            material = new Material(Shader.Find("Shaders/phong"));
+            material = new Material(Shader.Find("Shaders/phong_vs"));
             material.SetColor("Color", new Color4(rnd.Range(0.0f, 0.2f), rnd.Range(0.6f, 0.8f), rnd.Range(0.0f, 0.2f), 1.0f));
 
             GameObject leaveObj = new GameObject();
@@ -79,6 +79,9 @@ namespace SDLBase
 
         static void ExecuteApp_Forest(OpenTKApp app)
         {
+            Color4 ambientColor = new Color4(0.25f, 0.25f, 0.75f, 1.0f);
+            OpenTKApp.APP.mainScene.environment.SetColor("Color", ambientColor);
+
             float forestSize = 120.0f;
 
             // Create ground
@@ -96,6 +99,7 @@ namespace SDLBase
             Camera camera = cameraObject.AddComponent<Camera>();
             camera.transform.position = new Vector3(0.0f, 2.0f, 0.0f);
             camera.ortographic = false;
+            camera.SetClearColor(ambientColor);
             FirstPersonController fps = cameraObject.AddComponent<FirstPersonController>();
 
             // Create pipeline
