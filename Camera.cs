@@ -23,6 +23,7 @@ namespace OpenTKBase
 
         public ClearBufferMask  GetClearFlags() => _clearFlags;
         public Color4           GetClearColor() => _clearColor;
+        public void SetClearColor(Color4 c) { _clearColor = c; }
         public float            GetClearDepth() => _clearDepth;
         
         public bool             ortographic { get => _ortographic; set { _ortographic = value; _dirty = true; } }

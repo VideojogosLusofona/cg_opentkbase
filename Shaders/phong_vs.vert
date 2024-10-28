@@ -3,7 +3,11 @@ layout (location = 0) in vec3 position;
 layout (location = 1) in vec3 normal;
 
 uniform vec4 MaterialColor = vec4(1,1,0,1);
+<<<<<<< HEAD:Shaders/phong.vert
 uniform vec4 MaterialColorEmissive = vec4(0,0,0,1);
+=======
+uniform vec4 EnvColor = vec4(1,1, 1, 1);
+>>>>>>> 79db9ea55bd71eb28d8867739a7f78b337978b6a:Shaders/phong_vs.vert
 uniform mat4 MatrixClip;
 uniform mat4 MatrixWorld;
 uniform vec4 EnvColor;
@@ -38,6 +42,7 @@ vec3 ComputeLight(Light light, vec3 worldPos, vec3 worldNormal)
 
 void main()
 {
+<<<<<<< HEAD:Shaders/phong.vert
     vec3 worldPos = (MatrixWorld * vec4(position, 1)).xyz;
     vec3 worldNormal = (MatrixWorld * vec4(normal, 0)).xyz;
 
@@ -64,5 +69,8 @@ void main()
     // Add all lighting components
     fragColor = envLighting + emissiveLighting + vec4(directLight * MaterialColor.xyz, 0);
 
+=======
+    fragColor = MaterialColor * EnvColor;
+>>>>>>> 79db9ea55bd71eb28d8867739a7f78b337978b6a:Shaders/phong_vs.vert
     gl_Position = MatrixClip * vec4(position, 1.0);
 }

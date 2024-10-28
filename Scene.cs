@@ -5,9 +5,8 @@ namespace OpenTKBase
 {
     public class Scene
     {
+        public  Material environment;
         private List<GameObject> objects = new List<GameObject>();
-
-        public Material environment { get; private set; }
 
         public Scene()
         {
