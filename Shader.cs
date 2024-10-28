@@ -314,6 +314,7 @@ namespace OpenTKBase
             {
                 GL.GetActiveUniform(handle, i, 256, out int length, out int size, out ActiveUniformType type, out string uniformName);
                 int slot = GL.GetUniformLocation(handle, uniformName);
+                if (slot == -1) continue;
                 if (uniformName.StartsWith("Material"))
                 {
                     // This is a material property
@@ -333,7 +334,7 @@ namespace OpenTKBase
                     {
                         type = Uniform.Type.Environment,
                         name = uniformName.Substring(3),
-                        slot = i,
+                        slot = slot,
                         dataSize = size,
                         dataType = type
                     });
