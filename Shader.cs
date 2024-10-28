@@ -371,12 +371,12 @@ namespace OpenTKBase
         {
             uniforms = new List<Uniform>();
 
-            // Get number of uniforms
             GL.GetProgram(handle, GetProgramParameterName.ActiveUniforms, out int numUniforms);
             for (int i = 0; i < numUniforms; i++)
             {
                 GL.GetActiveUniform(handle, i, 256, out int length, out int size, out ActiveUniformType type, out string uniformName);
-
+                int slot = GL.GetUniformLocation(handle, uniformName);
+                if (slot == -1) continue;
                 if (uniformName.StartsWith("Material"))
                 {
                     // This is a material property
@@ -384,31 +384,7 @@ namespace OpenTKBase
                     {
                         type = Uniform.Type.Material,
                         name = uniformName.Substring(8),
-                        slot = i,
-                        dataSize = size,
-                        dataType = type
-                    });
-                }
-                else if (uniformName.StartsWith("Texture"))
-                {
-                    // This is a material property
-                    uniforms.Add(new Uniform()
-                    {
-                        type = Uniform.Type.Texture,
-                        name = uniformName.Substring(7),
-                        slot = i,
-                        dataSize = size,
-                        dataType = type
-                    });
-                }
-                else if (uniformName.StartsWith("EnvTexture"))
-                {
-                    // This is a material property
-                    uniforms.Add(new Uniform()
-                    {
-                        type = Uniform.Type.EnvTexture,
-                        name = uniformName.Substring(10),
-                        slot = i,
+                        slot = slot,
                         dataSize = size,
                         dataType = type
                     });
@@ -421,19 +397,7 @@ namespace OpenTKBase
                         type = Uniform.Type.Matrix,
                         name = uniformName.Substring(6),
                         matrixType = StringToMatrixType(uniformName.Substring(6)),
-                        slot = i,
-                        dataSize = size,
-                        dataType = type
-                    });
-                }
-                else if (uniformName.StartsWith("Env"))
-                {
-                    // This is a material property
-                    uniforms.Add(new Uniform()
-                    {
-                        type = Uniform.Type.Environment,
-                        name = uniformName.Substring(3),
-                        slot = i,
+                        slot = slot,
                         dataSize = size,
                         dataType = type
                     });
@@ -444,7 +408,19 @@ namespace OpenTKBase
                     {
                         type = Uniform.Type.Environment,
                         name = uniformName,
-                        slot = i,
+                        slot = slot,
+                        dataSize = size,
+                        dataType = type
+                    });
+                }
+                else if (uniformName.StartsWith("Texture"))
+                {
+                    // This is a material property
+                    uniforms.Add(new Uniform()
+                    {
+                        type = Uniform.Type.Texture,
+                        name = uniformName.Substring(7),
+                        slot = slot,
                         dataSize = size,
                         dataType = type
                     });
@@ -456,7 +432,31 @@ namespace OpenTKBase
                     {
                         type = Uniform.Type.HasTexture,
                         name = uniformName.Substring(10),
-                        slot = i,
+                        slot = slot,
+                        dataSize = size,
+                        dataType = type
+                    });
+                }
+                else if (uniformName.StartsWith("EnvTexture"))
+                {
+                    // This is a material property
+                    uniforms.Add(new Uniform()
+                    {
+                        type = Uniform.Type.EnvTexture,
+                        name = uniformName.Substring(10),
+                        slot = slot,
+                        dataSize = size,
+                        dataType = type
+                    });
+                }
+                else if (uniformName.StartsWith("Env"))
+                {
+                    // This is a material property
+                    uniforms.Add(new Uniform()
+                    {
+                        type = Uniform.Type.Environment,
+                        name = uniformName.Substring(3),
+                        slot = slot,
                         dataSize = size,
                         dataType = type
                     });
@@ -469,6 +469,7 @@ namespace OpenTKBase
                 }
             }
         }
+
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // STATIC STUFF
