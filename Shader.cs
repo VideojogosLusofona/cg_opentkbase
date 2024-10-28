@@ -3,10 +3,6 @@ using OpenTK.Mathematics;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Reflection.Metadata;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace OpenTKBase
 {
@@ -172,7 +168,7 @@ namespace OpenTKBase
                     if (errorCode == 0)
                     {
                         // If there are errors, log them
-                        string infoLog = GL.GetShaderInfoLog(handle);
+                        string infoLog = GL.GetShaderInfoLog(shaderHandle[i]);
                         Console.WriteLine(infoLog);
 
                         // Clear all shaders before this one
